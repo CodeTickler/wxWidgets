@@ -58,12 +58,8 @@
     // must do everything ourselves
     #undef wxHAS_NATIVE_ENABLED_MANAGEMENT
 #elif defined(__WXOSX__)
-    #if wxOSX_USE_CARBON
-        #define wxHAS_NATIVE_ENABLED_MANAGEMENT
-    #else
-        // must do everything ourselves
-        #undef wxHAS_NATIVE_ENABLED_MANAGEMENT
-    #endif
+    // must do everything ourselves
+    #undef wxHAS_NATIVE_ENABLED_MANAGEMENT
 #else
     #define wxHAS_NATIVE_ENABLED_MANAGEMENT
 #endif
@@ -105,7 +101,7 @@ struct WXDLLIMPEXP_CORE wxVisualAttributes
     wxColour colBg;
 };
 
-// different window variants, on platforms like eg mac uses different
+// different window variants, on platforms like e.g. mac uses different
 // rendering sizes
 enum wxWindowVariant
 {
@@ -209,7 +205,7 @@ public:
     virtual void SetLabel(const wxString& label) = 0;
     virtual wxString GetLabel() const = 0;
 
-        // the window name is used for ressource setting in X, it is not the
+        // the window name is used for resource setting in X, it is not the
         // same as the window title/label
     virtual void SetName( const wxString &name ) { m_windowName = name; }
     virtual wxString GetName() const { return m_windowName; }
@@ -512,7 +508,7 @@ public:
     }
 
         // Override these methods for windows that have a virtual size
-        // independent of their client size.  eg. the virtual area of a
+        // independent of their client size. e.g. the virtual area of a
         // wxScrolledWindow.
 
     virtual void DoSetVirtualSize( int x, int y );
@@ -530,7 +526,7 @@ public:
     }
 
     // returns the magnification of the content of this window
-    // eg 2.0 for a window on a retina screen
+    // e.g. 2.0 for a window on a retina screen
     virtual double GetContentScaleFactor() const;
 
     // return the size of the left/right and top/bottom borders in x and y
@@ -846,7 +842,7 @@ public:
     void SetEventHandler( wxEvtHandler *handler );
 
         // push/pop event handler: allows to chain a custom event handler to
-        // alreasy existing ones
+        // already existing ones
     void PushEventHandler( wxEvtHandler *handler );
     wxEvtHandler *PopEventHandler( bool deleteHandler = false );
 
@@ -1073,7 +1069,7 @@ public:
     const wxRegion& GetUpdateRegion() const { return m_updateRegion; }
     wxRegion& GetUpdateRegion() { return m_updateRegion; }
 
-        // get the update rectangleregion bounding box in client coords
+        // get the update rectangle region bounding box in client coords
     wxRect GetUpdateClientRect() const;
 
         // these functions verify whether the given point/rectangle belongs to
@@ -1541,13 +1537,23 @@ public:
     virtual wxWindow *GetMainWindowOfCompositeControl()
         { return (wxWindow*)this; }
 
-    // If this function returns true, keyboard navigation events shouldn't
+    enum NavigationKind
+    {
+        Navigation_Tab,
+        Navigation_Accel
+    };
+
+    // If this function returns true, keyboard events of the given kind can't
     // escape from it. A typical example of such "navigation domain" is a top
     // level window because pressing TAB in one of them must not transfer focus
     // to a different top level window. But it's not limited to them, e.g. MDI
     // children frames are not top level windows (and their IsTopLevel()
-    // returns false) but still are self-contained navigation domains as well.
-    virtual bool IsTopNavigationDomain() const { return false; }
+    // returns false) but still are self-contained navigation domains for the
+    // purposes of TAB navigation -- but not for the accelerators.
+    virtual bool IsTopNavigationDomain(NavigationKind WXUNUSED(kind)) const
+    {
+        return false;
+    }
 
 
 protected:

@@ -26,6 +26,7 @@
 #endif
 
 #include "wx/datectrl.h"
+#include "wx/except.h"
 #include "wx/spinctrl.h"
 #include "wx/choice.h"
 #include "wx/imaglist.h"
@@ -669,19 +670,17 @@ wxDataViewCtrl* wxDataViewRendererBase::GetView() const
 
 bool wxDataViewRendererBase::StartEditing( const wxDataViewItem &item, wxRect labelRect )
 {
-    wxDataViewCtrl* dv_ctrl = GetOwner()->GetOwner();
+    wxDataViewColumn* const column = GetOwner();
+    wxDataViewCtrl* const dv_ctrl = column->GetOwner();
 
     // Before doing anything we send an event asking if editing of this item is really wanted.
-    wxDataViewEvent start_event( wxEVT_DATAVIEW_ITEM_START_EDITING, dv_ctrl->GetId() );
-    start_event.SetDataViewColumn( GetOwner() );
-    start_event.SetModel( dv_ctrl->GetModel() );
-    start_event.SetItem( item );
-    start_event.SetEventObject( dv_ctrl );
-    dv_ctrl->GetEventHandler()->ProcessEvent( start_event );
-    if( !start_event.IsAllowed() )
+    wxDataViewEvent event(wxEVT_DATAVIEW_ITEM_START_EDITING, dv_ctrl, column, item);
+    dv_ctrl->GetEventHandler()->ProcessEvent( event );
+    if( !event.IsAllowed() )
         return false;
 
-    m_item = item; // remember for later
+    // Remember the item being edited for use in FinishEditing() later.
+    m_item = item;
 
     unsigned int col = GetOwner()->GetModelColumn();
     const wxVariant& value = CheckedGetValue(dv_ctrl->GetModel(), item, col);
@@ -690,7 +689,10 @@ bool wxDataViewRendererBase::StartEditing( const wxDataViewItem &item, wxRect la
 
     // there might be no editor control for the given item
     if(!m_editorCtrl)
+    {
+        m_item = wxDataViewItem();
         return false;
+    }
 
     wxDataViewEditorCtrlEvtHandler *handler =
         new wxDataViewEditorCtrlEvtHandler( m_editorCtrl, (wxDataViewRenderer*) this );
@@ -703,15 +705,16 @@ bool wxDataViewRendererBase::StartEditing( const wxDataViewItem &item, wxRect la
     m_editorCtrl->SetFocus();
 #endif
 
-    // Now we should send Editing Started event
-    wxDataViewEvent event( wxEVT_DATAVIEW_ITEM_EDITING_STARTED, dv_ctrl->GetId() );
-    event.SetDataViewColumn( GetOwner() );
-    event.SetModel( dv_ctrl->GetModel() );
-    event.SetItem( item );
-    event.SetEventObject( dv_ctrl );
-    dv_ctrl->GetEventHandler()->ProcessEvent( event );
-
     return true;
+}
+
+void wxDataViewRendererBase::NotifyEditingStarted(const wxDataViewItem& item)
+{
+    wxDataViewColumn* const column = GetOwner();
+    wxDataViewCtrl* const dv_ctrl = column->GetOwner();
+
+    wxDataViewEvent event(wxEVT_DATAVIEW_ITEM_EDITING_STARTED, dv_ctrl, column, item);
+    dv_ctrl->GetEventHandler()->ProcessEvent( event );
 }
 
 void wxDataViewRendererBase::DestroyEditControl()
@@ -745,37 +748,40 @@ bool wxDataViewRendererBase::FinishEditing()
     if (!m_editorCtrl)
         return true;
 
+    // Try to get the value, normally we should succeed but if we fail, don't
+    // return immediately, we still need to destroy the edit control.
     wxVariant value;
-    if ( !GetValueFromEditorCtrl(m_editorCtrl, value) )
-        return false;
+    const bool gotValue = GetValueFromEditorCtrl(m_editorCtrl, value);
 
-    wxDataViewCtrl* dv_ctrl = GetOwner()->GetOwner();
+    wxDataViewColumn* const column = GetOwner();
+    wxDataViewCtrl* const dv_ctrl = column->GetOwner();
 
     DestroyEditControl();
 
     dv_ctrl->GetMainWindow()->SetFocus();
 
+    if ( !gotValue )
+        return false;
+
     bool isValid = Validate(value);
     unsigned int col = GetOwner()->GetModelColumn();
 
     // Now we should send Editing Done event
-    wxDataViewEvent event( wxEVT_DATAVIEW_ITEM_EDITING_DONE, dv_ctrl->GetId() );
-    event.SetDataViewColumn( GetOwner() );
-    event.SetModel( dv_ctrl->GetModel() );
-    event.SetItem( m_item );
+    wxDataViewEvent event(wxEVT_DATAVIEW_ITEM_EDITING_DONE, dv_ctrl, column, m_item);
     event.SetValue( value );
-    event.SetColumn( col );
     event.SetEditCanceled( !isValid );
-    event.SetEventObject( dv_ctrl );
     dv_ctrl->GetEventHandler()->ProcessEvent( event );
 
+    bool accepted = false;
     if ( isValid && event.IsAllowed() )
     {
         dv_ctrl->GetModel()->ChangeValue(value, m_item, col);
-        return true;
+        accepted = true;
     }
 
-    return false;
+    m_item = wxDataViewItem();
+
+    return accepted;
 }
 
 wxVariant
@@ -813,6 +819,11 @@ wxDataViewRendererBase::PrepareForItem(const wxDataViewModel *model,
                                        const wxDataViewItem& item,
                                        unsigned column)
 {
+    // This method is called by the native control, so we shouldn't allow
+    // exceptions to escape from it.
+    wxTRY
+    {
+
     // Now check if we have a value and remember it for rendering it later.
     // Notice that we do it even if it's null, as the cell should be empty then
     // and not show the last used value.
@@ -843,6 +854,15 @@ wxDataViewRendererBase::PrepareForItem(const wxDataViewModel *model,
     }
 
     SetEnabled(enabled);
+
+    }
+    wxCATCH_ALL
+    (
+        // There is not much we can do about it here, just log it and don't
+        // show anything in this cell.
+        wxLogDebug("Retrieving the value from the model threw an exception");
+        SetValue(wxVariant());
+    )
 
     return true;
 }
@@ -985,16 +1005,21 @@ wxDataViewCustomRendererBase::RenderText(const wxString& text,
 
     int flags = 0;
     if ( state & wxDATAVIEW_CELL_SELECTED )
-        flags |= wxCONTROL_SELECTED | wxCONTROL_FOCUSED;
+        flags |= wxCONTROL_SELECTED;
     if ( !GetOwner()->GetOwner()->IsEnabled() )
         flags |= wxCONTROL_DISABLED;
 
+    // Notice that we intentionally don't use any alignment here: it is not
+    // necessary because the cell rectangle had been already adjusted to
+    // account for the alignment in WXCallRender() and using the alignment here
+    // results in problems with ellipsization when using native MSW renderer,
+    // see http://trac.wxwidgets.org/ticket/17363, so just don't do it.
     wxRendererNative::Get().DrawItemText(
         GetOwner()->GetOwner(),
         *dc,
         text,
         rectText,
-        GetEffectiveAlignment(),
+        wxALIGN_NOT,
         flags,
         GetEllipsizeMode());
 }
@@ -1044,17 +1069,20 @@ void wxDataViewEditorCtrlEvtHandler::OnChar( wxKeyEvent &event )
 {
     switch ( event.m_keyCode )
     {
-        case WXK_RETURN:
-            m_finished = true;
-            m_owner->FinishEditing();
-            break;
-
         case WXK_ESCAPE:
-        {
             m_finished = true;
             m_owner->CancelEditing();
             break;
-        }
+
+        case WXK_RETURN:
+            if ( !event.HasAnyModifiers() )
+            {
+                m_finished = true;
+                m_owner->FinishEditing();
+                break;
+            }
+            wxFALLTHROUGH; // Ctrl/Alt/Shift-Enter is not handled specially
+
         default:
             event.Skip();
     }
@@ -1138,6 +1166,13 @@ const wxDataViewModel* wxDataViewCtrlBase::GetModel() const
     return m_model;
 }
 
+void wxDataViewCtrlBase::Expand(const wxDataViewItem& item)
+{
+    ExpandAncestors(item);
+
+    DoExpand(item);
+}
+
 void wxDataViewCtrlBase::ExpandAncestors( const wxDataViewItem & item )
 {
     if (!m_model) return;
@@ -1157,7 +1192,7 @@ void wxDataViewCtrlBase::ExpandAncestors( const wxDataViewItem & item )
     // then we expand the parents, starting at the root
     while (!parentChain.empty())
     {
-         Expand(parentChain.back());
+         DoExpand(parentChain.back());
          parentChain.pop_back();
     }
 }
@@ -1570,6 +1605,29 @@ wxDEFINE_EVENT( wxEVT_DATAVIEW_ITEM_BEGIN_DRAG, wxDataViewEvent );
 wxDEFINE_EVENT( wxEVT_DATAVIEW_ITEM_DROP_POSSIBLE, wxDataViewEvent );
 wxDEFINE_EVENT( wxEVT_DATAVIEW_ITEM_DROP, wxDataViewEvent );
 
+// Common part of non-copy ctors.
+void wxDataViewEvent::Init(wxDataViewCtrlBase* dvc,
+                           wxDataViewColumn* column,
+                           const wxDataViewItem& item)
+{
+    m_item = item;
+    m_col = column ? column->GetModelColumn() : -1;
+    m_model = dvc ? dvc->GetModel() : NULL;
+    m_column = column;
+    m_pos = wxDefaultPosition;
+    m_cacheFrom = 0;
+    m_cacheTo = 0;
+    m_editCancelled = false;
+#if wxUSE_DRAG_AND_DROP
+    m_dataObject = NULL;
+    m_dataBuffer = NULL;
+    m_dataSize = 0;
+    m_dragFlags = 0;
+    m_dropEffect = wxDragNone;
+#endif // wxUSE_DRAG_AND_DROP
+
+    SetEventObject(dvc);
+}
 
 #if wxUSE_SPINCTRL
 
@@ -1647,7 +1705,7 @@ bool wxDataViewSpinRenderer::GetValue( wxVariant &value ) const
 // wxDataViewChoiceRenderer
 // -------------------------------------
 
-#if defined(wxHAS_GENERIC_DATAVIEWCTRL) || defined(__WXOSX_CARBON__)
+#if defined(wxHAS_GENERIC_DATAVIEWCTRL)
 
 wxDataViewChoiceRenderer::wxDataViewChoiceRenderer( const wxArrayString& choices, wxDataViewCellMode mode, int alignment ) :
    wxDataViewCustomRenderer(wxT("string"), mode, alignment )
@@ -1720,6 +1778,7 @@ wxDataViewChoiceByIndexRenderer::wxDataViewChoiceByIndexRenderer( const wxArrayS
                                   wxDataViewCellMode mode, int alignment ) :
       wxDataViewChoiceRenderer( choices, mode, alignment )
 {
+    m_variantType = wxS("long");
 }
 
 wxWindow* wxDataViewChoiceByIndexRenderer::CreateEditorCtrl( wxWindow *parent, wxRect labelRect, const wxVariant &value )

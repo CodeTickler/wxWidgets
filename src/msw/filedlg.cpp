@@ -465,10 +465,8 @@ int wxFileDialog::ShowModal()
 {
     WX_HOOK_MODAL_DIALOG();
 
-    HWND hWnd = 0;
-    if (m_parent) hWnd = (HWND) m_parent->GetHWND();
-    if (!hWnd && wxTheApp->GetTopWindow())
-        hWnd = (HWND) wxTheApp->GetTopWindow()->GetHWND();
+    wxWindow* const parent = GetParentForModalDialog(m_parent, GetWindowStyle());
+    WXHWND hWndParent = parent ? GetHwndOf(parent) : NULL;
 
     static wxChar fileNameBuffer [ wxMAXPATH ];           // the file-name
     wxChar        titleBuffer    [ wxMAXFILE+1+wxMAXEXT ];  // the file-name, without path
@@ -523,7 +521,7 @@ int wxFileDialog::ShowModal()
     wxZeroMemory(of);
 
     of.lStructSize       = gs_ofStructSize;
-    of.hwndOwner         = hWnd;
+    of.hwndOwner         = hWndParent;
     of.lpstrTitle        = m_message.t_str();
     of.lpstrFileTitle    = titleBuffer;
     of.nMaxFileTitle     = wxMAXFILE + 1 + wxMAXEXT;
@@ -656,23 +654,30 @@ int wxFileDialog::ShowModal()
         }
     }
 
+    // Create a temporary struct to restore the CWD when we exit this function
     // store off before the standard windows dialog can possibly change it
-    const wxString cwdOrig = wxGetCwd();
-
-    //== Execute FileDialog >>=================================================
-
-    if ( !ShowCommFileDialog(&of, m_windowStyle) )
-        return wxID_CANCEL;
+    struct CwdRestore
+    {
+        wxString value;
+        ~CwdRestore()
+        {
+            if (!value.empty())
+                wxSetWorkingDirectory(value);
+        }
+    } cwdOrig;
 
     // GetOpenFileName will always change the current working directory on
     // (according to MSDN) "Windows NT 4.0/2000/XP" because the flag
     // OFN_NOCHANGEDIR has no effect.  If the user did not specify
     // wxFD_CHANGE_DIR let's restore the current working directory to what it
     // was before the dialog was shown.
-    if ( msw_flags & OFN_NOCHANGEDIR )
-    {
-        wxSetWorkingDirectory(cwdOrig);
-    }
+    if (msw_flags & OFN_NOCHANGEDIR)
+        cwdOrig.value = wxGetCwd();
+
+    //== Execute FileDialog >>=================================================
+
+    if ( !ShowCommFileDialog(&of, m_windowStyle) )
+        return wxID_CANCEL;
 
     m_fileNames.Empty();
 

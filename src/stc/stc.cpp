@@ -224,6 +224,9 @@ bool wxStyledTextCtrl::Create(wxWindow *parent,
     // Make sure it can take the focus
     SetCanFocus(true);
 
+    // STC doesn't support RTL languages at all
+    SetLayoutDirection(wxLayout_LeftToRight);
+
     return true;
 }
 
@@ -560,7 +563,7 @@ void wxStyledTextCtrl::SetCodePage(int codePage) {
     SendMsg(SCI_SETCODEPAGE, codePage);
 }
 
-// Is the IME displayed in a winow or inline?
+// Is the IME displayed in a window or inline?
 int wxStyledTextCtrl::GetIMEInteraction() const
 {
     return SendMsg(SCI_GETIMEINTERACTION, 0, 0);
@@ -1821,6 +1824,17 @@ int wxStyledTextCtrl::GetTextLength() const
     return SendMsg(SCI_GETTEXTLENGTH, 0, 0);
 }
 
+// Retrieve a pointer to a function that processes messages for this Scintilla.
+void* wxStyledTextCtrl::GetDirectFunction() const {
+         return (void*)SendMsg(SCI_GETDIRECTFUNCTION);
+}
+
+// Retrieve a pointer value to use as the first argument when calling
+// the function returned by GetDirectFunction.
+void* wxStyledTextCtrl::GetDirectPointer() const {
+         return (void*)SendMsg(SCI_GETDIRECTPOINTER);
+}
+
 // Set to overtype (true) or insert mode.
 void wxStyledTextCtrl::SetOvertype(bool overtype)
 {
@@ -1887,6 +1901,18 @@ wxString wxStyledTextCtrl::GetTargetText() const {
          mbuf.UngetWriteBuf(endPos-startPos);
          mbuf.AppendByte(0);
          return stc2wx(buf);
+}
+
+// Make the target range start and end be the same as the selection range start and end.
+void wxStyledTextCtrl::TargetFromSelection()
+{
+    SendMsg(SCI_TARGETFROMSELECTION, 0, 0);
+}
+
+// Sets the target to the whole document.
+void wxStyledTextCtrl::TargetWholeDocument()
+{
+    SendMsg(SCI_TARGETWHOLEDOCUMENT, 0, 0);
 }
 
 // Replace the target text with the argument text.
@@ -2186,6 +2212,24 @@ int wxStyledTextCtrl::WordEndPosition(int pos, bool onlyWordCharacters)
     return SendMsg(SCI_WORDENDPOSITION, pos, onlyWordCharacters);
 }
 
+// Is the range start..end considered a word?
+bool wxStyledTextCtrl::IsRangeWord(int start, int end)
+{
+    return SendMsg(SCI_ISRANGEWORD, start, end) != 0;
+}
+
+// Sets limits to idle styling.
+void wxStyledTextCtrl::SetIdleStyling(int idleStyling)
+{
+    SendMsg(SCI_SETIDLESTYLING, idleStyling, 0);
+}
+
+// Retrieve the limits to idle styling.
+int wxStyledTextCtrl::GetIdleStyling() const
+{
+    return SendMsg(SCI_GETIDLESTYLING, 0, 0);
+}
+
 // Sets whether text is word wrapped.
 void wxStyledTextCtrl::SetWrapMode(int mode)
 {
@@ -2388,12 +2432,6 @@ wxString wxStyledTextCtrl::GetTag(int tagNumber) const {
          mbuf.UngetWriteBuf(len);
          mbuf.AppendByte(0);
          return stc2wx(buf);
-}
-
-// Make the target range start and end be the same as the selection range start and end.
-void wxStyledTextCtrl::TargetFromSelection()
-{
-    SendMsg(SCI_TARGETFROMSELECTION, 0, 0);
 }
 
 // Join the lines in the target.
@@ -3399,7 +3437,7 @@ void wxStyledTextCtrl::AutoCompSetMulti(int multi)
     SendMsg(SCI_AUTOCSETMULTI, multi, 0);
 }
 
-// Retrieve the effect of autocompleting when there are multiple selections..
+// Retrieve the effect of autocompleting when there are multiple selections.
 int wxStyledTextCtrl::AutoCompGetMulti() const
 {
     return SendMsg(SCI_AUTOCGETMULTI, 0, 0);
@@ -4103,6 +4141,20 @@ void wxStyledTextCtrl::SwapMainAnchorCaret()
     SendMsg(SCI_SWAPMAINANCHORCARET, 0, 0);
 }
 
+// Add the next occurrence of the main selection to the set of selections as main.
+// If the current selection is empty then select word around caret.
+void wxStyledTextCtrl::MultipleSelectAddNext()
+{
+    SendMsg(SCI_MULTIPLESELECTADDNEXT, 0, 0);
+}
+
+// Add each occurrence of the main selection in the target to the set of selections.
+// If the current selection is empty then select word around caret.
+void wxStyledTextCtrl::MultipleSelectAddEach()
+{
+    SendMsg(SCI_MULTIPLESELECTADDEACH, 0, 0);
+}
+
 // Indicate that the internal state of a lexer has changed over a range and therefore
 // there may be a need to redraw.
 int wxStyledTextCtrl::ChangeLexerState(int start, int end)
@@ -4324,6 +4376,12 @@ void wxStyledTextCtrl::SetLexerLanguage(const wxString& language)
     SendMsg(SCI_SETLEXERLANGUAGE, 0, (sptr_t)(const char*)wx2stc(language));
 }
 
+// Load a lexer library (dll / so).
+void wxStyledTextCtrl::LoadLexerLibrary(const wxString& path)
+{
+    SendMsg(SCI_LOADLEXERLIBRARY, 0, (sptr_t)(const char*)wx2stc(path));
+}
+
 // Retrieve a 'property' value previously set with SetProperty.
 wxString wxStyledTextCtrl::GetProperty(const wxString& key) {
          int len = SendMsg(SCI_GETPROPERTY, (sptr_t)(const char*)wx2stc(key), 0);
@@ -4362,6 +4420,20 @@ int wxStyledTextCtrl::GetPropertyInt(const wxString& key) const
 int wxStyledTextCtrl::GetStyleBitsNeeded() const
 {
     return SendMsg(SCI_GETSTYLEBITSNEEDED, 0, 0);
+}
+
+// Retrieve the lexing language of the document.
+wxString wxStyledTextCtrl::GetLexerLanguage() const {
+         const int msg = SCI_GETLEXERLANGUAGE;
+         int len = SendMsg(msg, 0, (sptr_t)NULL);
+         if (!len) return wxEmptyString;
+
+         wxMemoryBuffer mbuf(len+1);
+         char* buf = (char*)mbuf.GetWriteBuf(len+1);
+         SendMsg(msg, 0, (sptr_t)buf);
+         mbuf.UngetWriteBuf(len);
+         mbuf.AppendByte(0);
+         return stc2wx(buf);
 }
 
 // For private communication between an application and a known lexer.
@@ -4937,6 +5009,17 @@ wxCharBuffer wxStyledTextCtrl::GetSelectedTextRaw()
     return buf;
 }
 
+wxCharBuffer wxStyledTextCtrl::GetTargetTextRaw()
+{
+    // Calculate the length needed first.
+    const int len = SendMsg(SCI_GETTARGETEND, 0, 0) - SendMsg(SCI_GETTARGETSTART, 0, 0);
+
+    // And then really get the data.
+    wxCharBuffer buf(len);
+    SendMsg(SCI_GETTARGETTEXT, 0, (sptr_t)buf.data());
+    return buf;
+}
+
 wxCharBuffer wxStyledTextCtrl::GetTextRangeRaw(int startPos, int endPos)
 {
     if (endPos < startPos) {
@@ -4955,6 +5038,7 @@ wxCharBuffer wxStyledTextCtrl::GetTextRangeRaw(int startPos, int endPos)
     tr.lpstrText = buf.data();
     tr.chrg.cpMin = startPos;
     tr.chrg.cpMax = endPos;
+    tr.lpstrText[0] = '\0'; // initialize with 0 in case the range is invalid
     SendMsg(SCI_GETTEXTRANGE, 0, (sptr_t)&tr);
     return buf;
 }
@@ -5430,7 +5514,7 @@ wxStyledTextEvent::wxStyledTextEvent(const wxStyledTextEvent& event):
 
 /*static*/ wxVersionInfo wxStyledTextCtrl::GetLibraryVersionInfo()
 {
-    return wxVersionInfo("Scintilla", 3, 5, 5, "Scintilla 3.5.5");
+    return wxVersionInfo("Scintilla", 3, 6, 6, "Scintilla 3.6.6");
 }
 
 #endif // wxUSE_STC

@@ -128,11 +128,7 @@ class wxSearchCtrl;
 
 WXDLLIMPEXP_CORE wxWindowMac * wxFindWindowFromWXWidget(WXWidget inControl );
 
-#if wxOSX_USE_CARBON
-typedef wxMacControl wxWidgetImplType;
-#else
 typedef wxWidgetImpl wxWidgetImplType;
-#endif
 
 #if wxUSE_MENUS
 class wxMenuItemImpl : public wxObject
@@ -292,6 +288,8 @@ public :
 #if wxUSE_MARKUP && wxOSX_USE_COCOA
     virtual void        SetLabelMarkup( const wxString& WXUNUSED(markup) ) { }
 #endif
+    virtual void        SetInitialLabel( const wxString& title, wxFontEncoding encoding )
+                            { SetLabel(title, encoding); }
 
     virtual void        SetCursor( const wxCursor & cursor ) = 0;
     virtual void        CaptureMouse() = 0;
@@ -613,6 +611,7 @@ public:
     // display
 
     virtual void            ListScrollTo( unsigned int n ) = 0;
+    virtual int             ListGetTopItem() const = 0;
     virtual void            UpdateLine( unsigned int n, wxListWidgetColumn* col = NULL ) = 0;
     virtual void            UpdateLineToEnd( unsigned int n) = 0;
 

@@ -1,19 +1,16 @@
-# Lithuanian translations for wxWidgets.
-# Initial translation by Pieter <pieter.clarysse@bricsys.com>, 2012.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: wxWidgets 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-23 22:46+0400\n"
-"PO-Revision-Date: 2012-01-20 09:14+0100\n"
-"Last-Translator: Pieter <pieter.clarysse@bricsys.com>\n"
-"Language-Team: KALBA <LL@li.org>\n"
+"POT-Creation-Date: 2016-01-08 19:30+0400\n"
+"PO-Revision-Date: 2015-07-09 11:22+0200\n"
+"Last-Translator: Andrius <andrius.balsevicius@gmail.com>\n"
+"Language-Team: wxWidgets translators <wx-translators@googlegroups.com>\n"
 "Language: lt\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n > 1\n"
+"Plural-Forms: nplurals=3; plural=n != 1;\n"
 
 #: ../src/common/debugrpt.cpp:591
 msgid ""
@@ -33,7 +30,7 @@ msgstr ""
 #: ../src/common/prntbase.cpp:573
 #, c-format
 msgid " (copy %d of %d)"
-msgstr ""
+msgstr " kopija %d iš %d"
 
 #: ../src/common/log.cpp:425
 #, c-format
@@ -63,31 +60,31 @@ msgstr " kursyvas"
 
 #: ../src/common/fontcmn.cpp:818
 msgid " light"
-msgstr ""
+msgstr " lengvas"
 
 #: ../src/common/fontcmn.cpp:805
 msgid " strikethrough"
-msgstr ""
+msgstr " perbrauktas"
 
 #: ../src/common/paper.cpp:118
 msgid "#10 Envelope, 4 1/8 x 9 1/2 in"
-msgstr ""
+msgstr "#10 Vokas, 4 1/8 x 9 1/2 colių"
 
 #: ../src/common/paper.cpp:119
 msgid "#11 Envelope, 4 1/2 x 10 3/8 in"
-msgstr ""
+msgstr "#11 Vokas, 4 1/2 x 10 3/8 colių"
 
 #: ../src/common/paper.cpp:120
 msgid "#12 Envelope, 4 3/4 x 11 in"
-msgstr ""
+msgstr "#12 Vokas, 4 3/4 x 11 colių"
 
 #: ../src/common/paper.cpp:121
 msgid "#14 Envelope, 5 x 11 1/2 in"
-msgstr ""
+msgstr "#14 Vokas, 5 x 11 1/2 colių"
 
 #: ../src/common/paper.cpp:117
 msgid "#9 Envelope, 3 7/8 x 8 7/8 in"
-msgstr ""
+msgstr "#9 Vokas, 3 7/8 x 8 7/8 colių"
 
 #: ../src/richtext/richtextbackgroundpage.cpp:342
 #: ../src/richtext/richtextsizepage.cpp:340
@@ -101,17 +98,17 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:626
 #: ../src/richtext/richtextsizepage.cpp:661
 msgid "%"
-msgstr ""
+msgstr "%"
 
 #: ../src/html/helpwnd.cpp:1031
 #, c-format
 msgid "%d of %lu"
-msgstr ""
+msgstr "%d iš %lu"
 
 #: ../src/html/helpwnd.cpp:1678
 #, c-format
 msgid "%i of %u"
-msgstr ""
+msgstr "%i iš %u"
 
 #: ../src/generic/filectrlg.cpp:315
 #, c-format
@@ -119,16 +116,18 @@ msgid "%ld byte"
 msgid_plural "%ld bytes"
 msgstr[0] "%ld baitų"
 msgstr[1] "%ld baitų"
+msgstr[2] "%ld baitų"
+
 
 #: ../src/html/helpwnd.cpp:1033
 #, c-format
 msgid "%lu of %lu"
-msgstr ""
+msgstr "%lu iš %lu"
 
 #: ../src/common/cmdline.cpp:1221
 #, c-format
 msgid "%s (or %s)"
-msgstr ""
+msgstr "%s (iš %s)"
 
 #: ../src/generic/logg.cpp:229
 #, c-format
@@ -163,13 +162,12 @@ msgstr ""
 #: ../src/html/helpwnd.cpp:1716
 #, c-format
 msgid "%u of %u"
-msgstr ""
+msgstr "%u iš %u"
 
 #: ../src/common/stockitem.cpp:139 ../src/html/helpfrm.cpp:142
 #: ../src/html/helpfrm.cpp:144
-#, fuzzy
 msgid "&About"
-msgstr "Apie"
+msgstr "&Apie"
 
 #: ../src/common/stockitem.cpp:207
 msgid "&Actual Size"
@@ -367,7 +365,7 @@ msgstr ""
 
 #: ../src/common/stockitem.cpp:194
 msgid "&Font"
-msgstr ""
+msgstr "Š&riftas"
 
 #: ../src/generic/fontdlgg.cpp:371
 msgid "&Font family:"
@@ -512,7 +510,7 @@ msgstr "&Kitas patarimas"
 
 #: ../src/richtext/richtextstylepage.cpp:125
 msgid "&Next style:"
-msgstr "&Kitas stilius"
+msgstr "&Kitas stilius:"
 
 #: ../src/common/stockitem.cpp:177 ../src/msw/msgdlg.cpp:463
 msgid "&No"
@@ -562,9 +560,8 @@ msgid "&Position (tenths of a mm):"
 msgstr ""
 
 #: ../src/richtext/richtextsizepage.cpp:514
-#, fuzzy
 msgid "&Position mode:"
-msgstr "Padėtis"
+msgstr "&Padėtis:"
 
 #: ../src/common/stockitem.cpp:181
 msgid "&Preferences"
@@ -652,11 +649,11 @@ msgstr ""
 
 #: ../src/univ/themes/win32.cpp:3750
 msgid "&Size"
-msgstr ""
+msgstr "&Dydis"
 
 #: ../src/richtext/richtextfontpage.cpp:159
 msgid "&Size:"
-msgstr ""
+msgstr "&Dydis:"
 
 #: ../src/generic/progdlgg.cpp:285
 msgid "&Skip"
@@ -694,7 +691,7 @@ msgstr ""
 #: ../src/richtext/richtextbulletspage.cpp:209
 #: ../src/richtext/richtextliststylepage.cpp:268
 msgid "&Symbol:"
-msgstr ""
+msgstr "&Simbolis:"
 
 #: ../src/richtext/richtextborderspage.cpp:383
 #: ../src/richtext/richtextborderspage.cpp:552
@@ -749,9 +746,8 @@ msgid "&Vertical alignment:"
 msgstr ""
 
 #: ../src/richtext/richtextbackgroundpage.cpp:236
-#, fuzzy
 msgid "&Vertical offset:"
-msgstr "Vertikali lygiuotė."
+msgstr "&Vertikali lygiuotė:"
 
 #: ../src/generic/dbgrptg.cpp:340
 msgid "&View..."
@@ -845,16 +841,16 @@ msgstr ""
 #: ../src/richtext/richtextbulletspage.cpp:166
 #: ../src/richtext/richtextliststylepage.cpp:229
 msgid "(*)"
-msgstr "(*)"
+msgstr "*"
 
 #: ../src/html/helpwnd.cpp:963
 msgid "(Help)"
-msgstr ""
+msgstr "Pagalba"
 
 #: ../src/richtext/richtextbulletspage.cpp:273
 #: ../src/richtext/richtextliststylepage.cpp:481
 msgid "(None)"
-msgstr "(joks)"
+msgstr "Joks"
 
 #: ../src/richtext/richtextsymboldlg.cpp:504
 msgid "(Normal text)"
@@ -878,7 +874,7 @@ msgstr ""
 #: ../src/richtext/richtextliststylepage.cpp:460
 #: ../src/richtext/richtextliststylepage.cpp:461
 msgid "(none)"
-msgstr "(joks)"
+msgstr "Joks"
 
 #: ../src/richtext/richtextbulletspage.cpp:284
 #: ../src/richtext/richtextliststylepage.cpp:492
@@ -897,7 +893,7 @@ msgstr "+"
 
 #: ../src/msw/utils.cpp:1255
 msgid ", 64-bit edition"
-msgstr ""
+msgstr ", 64-bit laida"
 
 #: ../src/richtext/richtextbulletspage.cpp:285
 #: ../src/richtext/richtextliststylepage.cpp:493
@@ -955,23 +951,23 @@ msgstr "1.9"
 
 #: ../src/common/paper.cpp:141
 msgid "10 x 11 in"
-msgstr ""
+msgstr "10 x 11 colių"
 
 #: ../src/common/paper.cpp:114
 msgid "10 x 14 in"
-msgstr ""
+msgstr "10 x 14 colių"
 
 #: ../src/common/paper.cpp:115
 msgid "11 x 17 in"
-msgstr ""
+msgstr "11 x 17 colių"
 
 #: ../src/common/paper.cpp:185
 msgid "12 x 11 in"
-msgstr ""
+msgstr "12 x 11 colių"
 
 #: ../src/common/paper.cpp:142
 msgid "15 x 11 in"
-msgstr ""
+msgstr "15 x 11 colių"
 
 #: ../src/richtext/richtextindentspage.cpp:285
 #: ../src/richtext/richtextliststylepage.cpp:459
@@ -980,11 +976,11 @@ msgstr "2"
 
 #: ../src/common/paper.cpp:133
 msgid "6 3/4 Envelope, 3 5/8 x 6 1/2 in"
-msgstr ""
+msgstr "6 3/4 Vokas, 3 5/8 x 6 1/2 colių"
 
 #: ../src/common/paper.cpp:140
 msgid "9 x 11 in"
-msgstr ""
+msgstr "9 x 11 colių"
 
 #: ../src/html/htmprint.cpp:431
 msgid ": file does not exist!"
@@ -1046,7 +1042,7 @@ msgstr ""
 
 #: ../src/generic/filectrlg.cpp:288 ../src/generic/filectrlg.cpp:311
 msgid "<LINK>"
-msgstr ""
+msgstr "NUORODA"
 
 #: ../src/html/helpwnd.cpp:1266
 msgid "<b><i>Bold italic face.</i></b><br>"
@@ -1090,92 +1086,92 @@ msgstr ""
 
 #: ../src/common/paper.cpp:218
 msgid "A0 sheet, 841 x 1189 mm"
-msgstr ""
+msgstr "A0 lapas, 841 x 1189 mm"
 
 #: ../src/common/paper.cpp:219
 msgid "A1 sheet, 594 x 841 mm"
-msgstr ""
+msgstr "A1 lapas, 594 x 841 mm"
 
 #: ../src/common/paper.cpp:160
 msgid "A2 420 x 594 mm"
-msgstr ""
+msgstr "A2 420 x 594 mm"
 
 #: ../src/common/paper.cpp:157
 msgid "A3 Extra 322 x 445 mm"
-msgstr ""
+msgstr "A3 Ekstra 322 x 445 mm"
 
 #: ../src/common/paper.cpp:162
 msgid "A3 Extra Transverse 322 x 445 mm"
-msgstr ""
+msgstr "A3 Ekstra Skersinis 322 x 445 mm"
 
 #: ../src/common/paper.cpp:171
 msgid "A3 Rotated 420 x 297 mm"
-msgstr ""
+msgstr "A3 Pasuktas 420 x 297 mm"
 
 #: ../src/common/paper.cpp:161
 msgid "A3 Transverse 297 x 420 mm"
-msgstr ""
+msgstr "A3 Skersinis 297 x 420 mm"
 
 #: ../src/common/paper.cpp:107
 msgid "A3 sheet, 297 x 420 mm"
-msgstr ""
+msgstr "A3 lapas, 297 x 420 mm"
 
 #: ../src/common/paper.cpp:147
 msgid "A4 Extra 9.27 x 12.69 in"
-msgstr ""
+msgstr "A4 Ekstra 9.27 x 12.69 colių"
 
 #: ../src/common/paper.cpp:154
 msgid "A4 Plus 210 x 330 mm"
-msgstr ""
+msgstr "A4 Plius 210 x 330 mm"
 
 #: ../src/common/paper.cpp:172
 msgid "A4 Rotated 297 x 210 mm"
-msgstr ""
+msgstr "A4 Pasuktas 297 x 210 mm"
 
 #: ../src/common/paper.cpp:149
 msgid "A4 Transverse 210 x 297 mm"
-msgstr ""
+msgstr "A4 Skersinis 210 x 297 mm"
 
 #: ../src/common/paper.cpp:98
 msgid "A4 sheet, 210 x 297 mm"
-msgstr ""
+msgstr "A4 lapas, 210 x 297 mm"
 
 #: ../src/common/paper.cpp:108
 msgid "A4 small sheet, 210 x 297 mm"
-msgstr ""
+msgstr "A4 small lapas, 210 x 297 mm"
 
 #: ../src/common/paper.cpp:158
 msgid "A5 Extra 174 x 235 mm"
-msgstr ""
+msgstr "A5 Ekstra 174 x 235 mm"
 
 #: ../src/common/paper.cpp:173
 msgid "A5 Rotated 210 x 148 mm"
-msgstr ""
+msgstr "A5 Pasuktas 210 x 148 mm"
 
 #: ../src/common/paper.cpp:155
 msgid "A5 Transverse 148 x 210 mm"
-msgstr ""
+msgstr "A5 Skersinis 148 x 210 mm"
 
 #: ../src/common/paper.cpp:109
 msgid "A5 sheet, 148 x 210 mm"
-msgstr ""
+msgstr "A5 lapas, 148 x 210 mm"
 
 #: ../src/common/paper.cpp:165
 msgid "A6 105 x 148 mm"
-msgstr ""
+msgstr "A6 105 x 148 mm"
 
 #: ../src/common/paper.cpp:178
 msgid "A6 Rotated 148 x 105 mm"
-msgstr ""
+msgstr "A6 Pasuktas 148 x 105 mm"
 
 #: ../src/generic/fontdlgg.cpp:83 ../src/osx/carbon/fontdlg.cpp:323
 #: ../src/richtext/richtextformatdlg.cpp:539
 msgid "ABCDEFGabcdefg12345"
-msgstr ""
+msgstr "ABCDEFGabcdefg12345"
 
 #: ../src/common/ftp.cpp:405 ../src/richtext/richtextsymboldlg.cpp:458
 msgid "ASCII"
-msgstr ""
+msgstr "ASCII"
 
 #: ../src/common/stockitem.cpp:139
 msgid "About"
@@ -1193,11 +1189,10 @@ msgstr "Apie..."
 
 #: ../src/richtext/richtextsizepage.cpp:520
 msgid "Absolute"
-msgstr ""
+msgstr "Absoliutus"
 
 #. TRANSLATORS: Keyword of system colour
 #: ../src/propgrid/advprops.cpp:859
-#, fuzzy
 msgid "ActiveBorder"
 msgstr "Rėmelis"
 
@@ -1254,7 +1249,7 @@ msgstr ""
 
 #: ../src/common/preferencescmn.cpp:43
 msgid "Advanced"
-msgstr ""
+msgstr "Išsamiau"
 
 #: ../src/richtext/richtextliststylepage.cpp:435
 msgid "After a paragraph:"
@@ -1270,7 +1265,7 @@ msgstr ""
 
 #: ../src/richtext/richtextsizepage.cpp:266
 msgid "Alignment"
-msgstr ""
+msgstr "Lygiuotė"
 
 #: ../src/generic/prntdlgg.cpp:215
 msgid "All"
@@ -1307,7 +1302,7 @@ msgstr ""
 
 #: ../src/common/accelcmn.cpp:321 ../src/univ/themes/win32.cpp:3756
 msgid "Alt+"
-msgstr ""
+msgstr "Alt+"
 
 #: ../src/richtext/richtextborderspage.cpp:580
 #: ../src/richtext/richtextborderspage.cpp:582
@@ -1334,7 +1329,6 @@ msgid "Append log to file '%s' (choosing [No] will overwrite it)?"
 msgstr ""
 
 #: ../src/osx/menu_osx.cpp:615 ../src/osx/menu_osx.cpp:623
-#, fuzzy
 msgid "Application"
 msgstr "Objektų parinktis"
 
@@ -1363,7 +1357,7 @@ msgstr ""
 #. TRANSLATORS: System cursor name
 #: ../src/propgrid/advprops.cpp:1714
 msgid "Arrow"
-msgstr ""
+msgstr "Rodyklė"
 
 #: ../src/generic/aboutdlgg.cpp:184
 msgid "Artists"
@@ -1385,51 +1379,51 @@ msgstr ""
 
 #: ../src/common/paper.cpp:138
 msgid "B4 (ISO) 250 x 353 mm"
-msgstr ""
+msgstr "B4 (ISO) 250 x 353 mm"
 
 #: ../src/common/paper.cpp:174
 msgid "B4 (JIS) Rotated 364 x 257 mm"
-msgstr ""
+msgstr "B4 (JIS) Pasuktas 364 x 257 mm"
 
 #: ../src/common/paper.cpp:128
 msgid "B4 Envelope, 250 x 353 mm"
-msgstr ""
+msgstr "B4 Vokas, 250 x 353 mm"
 
 #: ../src/common/paper.cpp:110
 msgid "B4 sheet, 250 x 354 mm"
-msgstr ""
+msgstr "B4 lapas, 250 x 354 mm"
 
 #: ../src/common/paper.cpp:159
 msgid "B5 (ISO) Extra 201 x 276 mm"
-msgstr ""
+msgstr "B5 (ISO) Ekstra 201 x 276 mm"
 
 #: ../src/common/paper.cpp:175
 msgid "B5 (JIS) Rotated 257 x 182 mm"
-msgstr ""
+msgstr "B5 (JIS) Pasuktas 257 x 182 mm"
 
 #: ../src/common/paper.cpp:156
 msgid "B5 (JIS) Transverse 182 x 257 mm"
-msgstr ""
+msgstr "B5 (JIS) Skersinis 182 x 257 mm"
 
 #: ../src/common/paper.cpp:129
 msgid "B5 Envelope, 176 x 250 mm"
-msgstr ""
+msgstr "B5 Vokas, 176 x 250 mm"
 
 #: ../src/common/paper.cpp:111
 msgid "B5 sheet, 182 x 257 millimeter"
-msgstr ""
+msgstr "B5 lapas, 182 x 257 millimeter"
 
 #: ../src/common/paper.cpp:183
 msgid "B6 (JIS) 128 x 182 mm"
-msgstr ""
+msgstr "B6 (JIS) 128 x 182 mm"
 
 #: ../src/common/paper.cpp:184
 msgid "B6 (JIS) Rotated 182 x 128 mm"
-msgstr ""
+msgstr "B6 (JIS) Pasuktas 182 x 128 mm"
 
 #: ../src/common/paper.cpp:130
 msgid "B6 Envelope, 176 x 125 mm"
-msgstr ""
+msgstr "B6 Vokas, 176 x 125 mm"
 
 #: ../src/common/imagbmp.cpp:530 ../src/common/imagbmp.cpp:560
 #: ../src/common/imagbmp.cpp:575
@@ -1480,7 +1474,6 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:50
-#, fuzzy
 msgid "Backspace"
 msgstr "Galas"
 
@@ -1507,16 +1500,16 @@ msgstr ""
 
 #: ../src/propgrid/advprops.cpp:1555
 msgid "Black"
-msgstr ""
+msgstr "Juoda"
 
 #. TRANSLATORS: System cursor name
 #: ../src/propgrid/advprops.cpp:1716
 msgid "Blank"
-msgstr ""
+msgstr "Tuščia"
 
 #: ../src/propgrid/advprops.cpp:1564
 msgid "Blue"
-msgstr ""
+msgstr "Mėlyna"
 
 #: ../src/common/stockitem.cpp:143 ../src/generic/fontdlgg.cpp:333
 #: ../src/osx/carbon/fontdlg.cpp:524 ../src/richtext/richtextfontpage.cpp:353
@@ -1549,7 +1542,6 @@ msgid "Box styles"
 msgstr ""
 
 #: ../src/propgrid/advprops.cpp:1563
-#, fuzzy
 msgid "Brown"
 msgstr "Naršyti"
 
@@ -1609,23 +1601,23 @@ msgstr ""
 
 #: ../src/common/paper.cpp:124
 msgid "C3 Envelope, 324 x 458 mm"
-msgstr ""
+msgstr "C3 Vokas, 324 x 458 mm"
 
 #: ../src/common/paper.cpp:125
 msgid "C4 Envelope, 229 x 324 mm"
-msgstr ""
+msgstr "C4 Vokas, 229 x 324 mm"
 
 #: ../src/common/paper.cpp:123
 msgid "C5 Envelope, 162 x 229 mm"
-msgstr ""
+msgstr "C5 Vokas, 162 x 229 mm"
 
 #: ../src/common/paper.cpp:126
 msgid "C6 Envelope, 114 x 162 mm"
-msgstr ""
+msgstr "C6 Vokas, 114 x 162 mm"
 
 #: ../src/common/paper.cpp:127
 msgid "C65 Envelope, 114 x 229 mm"
-msgstr ""
+msgstr "C65 Vokas, 114 x 229 mm"
 
 #: ../src/common/stockitem.cpp:146
 msgid "CD-Rom"
@@ -1921,9 +1913,8 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:73
-#, fuzzy
 msgid "Capital"
-msgstr "kursyvas"
+msgstr "Kursyvas"
 
 #. TRANSLATORS: Keyword of system colour
 #: ../src/propgrid/advprops.cpp:865
@@ -1990,7 +1981,6 @@ msgstr ""
 
 #: ../src/richtext/richtextbuffer.cpp:3976
 #: ../src/richtext/richtextbuffer.cpp:8122
-#, fuzzy
 msgid "Change Properties"
 msgstr "&Savybės"
 
@@ -2134,7 +2124,7 @@ msgstr ""
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:70 ../src/common/stockitem.cpp:147
 msgid "Clear"
-msgstr ""
+msgstr "Išvalyti"
 
 #: ../src/generic/logg.cpp:520
 msgid "Clear the log contents"
@@ -2196,7 +2186,7 @@ msgstr ""
 #: ../src/richtext/richtextstyledlg.cpp:244
 #: ../src/richtext/richtextstyledlg.cpp:246
 msgid "Click to create a new box style."
-msgstr ""
+msgstr "Spustelėkite sukurti naujam dėžutės stiliui."
 
 #: ../src/richtext/richtextstyledlg.cpp:226
 #: ../src/richtext/richtextstyledlg.cpp:228
@@ -2303,7 +2293,7 @@ msgstr ""
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:112
 msgid "Command"
-msgstr ""
+msgstr "Komanda"
 
 #: ../src/common/init.cpp:196
 #, c-format
@@ -2321,7 +2311,7 @@ msgstr ""
 msgid ""
 "Compositing not supported by this system, please enable it in your Window "
 "Manager."
-msgstr ""
+msgstr "Komponavimas nėra įgalintas šioje sistemoje, prašome įgalinti tai Windows tvarkyklėje."
 
 #: ../src/html/helpwnd.cpp:1551
 msgid "Compressed HTML Help file (*.chm)|*.chm|"
@@ -2386,7 +2376,7 @@ msgstr "Kopijuoti"
 
 #: ../src/common/stockitem.cpp:258
 msgid "Copy selection"
-msgstr ""
+msgstr "Kopijuoti parinktį"
 
 #: ../src/msw/glcanvas.cpp:183 ../src/unix/glx11.cpp:136
 msgid "Core OpenGL profile is not supported by the OpenGL driver."
@@ -2472,7 +2462,7 @@ msgstr ""
 
 #: ../src/common/filefn.cpp:1468
 msgid "Could not set current working directory"
-msgstr ""
+msgstr "Nepavyko nustatyti aktyvaus darbo aplanko"
 
 #: ../src/osx/carbon/dataview.cpp:2773
 msgid "Could not set header description."
@@ -2553,7 +2543,7 @@ msgstr ""
 
 #: ../src/msw/dirdlg.cpp:455
 msgid "Couldn't obtain folder name"
-msgstr ""
+msgstr "Nepavyko gauti aplanko pavadinimo"
 
 #: ../src/unix/sound_sdl.cpp:229
 #, c-format
@@ -2600,11 +2590,11 @@ msgstr ""
 #. TRANSLATORS: System cursor name
 #: ../src/propgrid/advprops.cpp:1719
 msgid "Cross"
-msgstr ""
+msgstr "Kirsti"
 
 #: ../src/common/accelcmn.cpp:323
 msgid "Ctrl+"
-msgstr ""
+msgstr "Ctrl+"
 
 #: ../src/common/stockitem.cpp:151 ../src/msw/textctrl.cpp:2445
 #: ../src/osx/textctrl_osx.cpp:582 ../src/richtext/richtextctrl.cpp:332
@@ -2618,9 +2608,8 @@ msgstr ""
 #. TRANSLATORS: Custom colour choice entry
 #: ../src/propgrid/advprops.cpp:882 ../src/propgrid/advprops.cpp:1535
 #: ../src/propgrid/advprops.cpp:1573
-#, fuzzy
 msgid "Custom"
-msgstr "&Pritaikyti..."
+msgstr "&Pritaikyti"
 
 #: ../src/gtk/print.cpp:217
 msgid "Custom size"
@@ -2702,7 +2691,7 @@ msgstr ""
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:82
 msgid "Decimal"
-msgstr ""
+msgstr "Dešimtainis"
 
 #: ../src/generic/fontdlgg.cpp:323
 msgid "Decorative"
@@ -2710,9 +2699,8 @@ msgstr ""
 
 #. TRANSLATORS: System cursor name
 #: ../src/propgrid/advprops.cpp:1713
-#, fuzzy
 msgid "Default"
-msgstr "numatytasis"
+msgstr "Numatytasis"
 
 #: ../src/common/fmapbase.cpp:796
 msgid "Default encoding"
@@ -2728,7 +2716,6 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:49
-#, fuzzy
 msgid "Del"
 msgstr "Ištrinti"
 
@@ -2743,12 +2730,10 @@ msgid "Delete A&ll"
 msgstr ""
 
 #: ../src/richtext/richtextbuffer.cpp:11332
-#, fuzzy
 msgid "Delete Column"
 msgstr "Ištrinti stilių"
 
 #: ../src/richtext/richtextbuffer.cpp:11282
-#, fuzzy
 msgid "Delete Row"
 msgstr "Ištrinti"
 
@@ -2762,7 +2747,7 @@ msgstr ""
 
 #: ../src/generic/editlbox.cpp:274
 msgid "Delete item"
-msgstr ""
+msgstr "Ištrinti elementą"
 
 #: ../src/common/stockitem.cpp:260
 msgid "Delete selection"
@@ -2813,7 +2798,7 @@ msgstr "Ar žinote, kad..."
 #: ../src/dfb/wrapdfb.cpp:63
 #, c-format
 msgid "DirectFB error %d occurred."
-msgstr ""
+msgstr "Įvyko DirectFB klaida %d."
 
 #: ../src/motif/filedlg.cpp:219
 msgid "Directories"
@@ -2858,7 +2843,7 @@ msgstr ""
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:83
 msgid "Divide"
-msgstr ""
+msgstr "Padalinti"
 
 #: ../src/msw/mimetype.cpp:725
 msgid ""
@@ -2873,11 +2858,11 @@ msgstr ""
 #: ../src/common/docview.cpp:537
 #, c-format
 msgid "Do you want to save changes to %s?"
-msgstr ""
+msgstr "Ar norite išsaugoti %s pakeitimus?"
 
 #: ../src/common/prntbase.cpp:542
 msgid "Document:"
-msgstr ""
+msgstr "Dokumentas:"
 
 #: ../src/generic/aboutdlgg.cpp:73
 msgid "Documentation by "
@@ -2889,7 +2874,7 @@ msgstr ""
 
 #: ../src/common/sizer.cpp:2809
 msgid "Don't Save"
-msgstr ""
+msgstr "Nesaugoti"
 
 #: ../src/html/htmlwin.cpp:628 ../src/msw/frame.cpp:137
 msgid "Done"
@@ -2924,7 +2909,7 @@ msgstr "Žemyn"
 
 #: ../src/richtext/richtextctrl.cpp:859
 msgid "Drag"
-msgstr ""
+msgstr "Vilkti"
 
 #: ../src/common/paper.cpp:101
 msgid "E sheet, 34 x 44 in"
@@ -2956,17 +2941,17 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:438
 #: ../src/richtext/richtextsizepage.cpp:440
 msgid "Enable the maximum width value."
-msgstr ""
+msgstr "Įgalinti maksimalaus pločio reikšmę."
 
 #: ../src/richtext/richtextsizepage.cpp:411
 #: ../src/richtext/richtextsizepage.cpp:413
 msgid "Enable the minimum height value."
-msgstr ""
+msgstr "Įgalinti minimalaus aukščio reikšmę."
 
 #: ../src/richtext/richtextsizepage.cpp:384
 #: ../src/richtext/richtextsizepage.cpp:386
 msgid "Enable the minimum width value."
-msgstr ""
+msgstr "Įgalinti minimalaus pločio reikšmę."
 
 #: ../src/richtext/richtextsizepage.cpp:319
 #: ../src/richtext/richtextsizepage.cpp:321
@@ -3011,17 +2996,16 @@ msgstr ""
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:64
 msgid "End"
-msgstr ""
+msgstr "Pabaiga"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:53
-#, fuzzy
 msgid "Enter"
 msgstr "Spausdintuvas"
 
 #: ../src/richtext/richtextstyledlg.cpp:934
 msgid "Enter a box style name"
-msgstr ""
+msgstr "Įveskite dėžutės stiliaus pavadinimą"
 
 #: ../src/richtext/richtextstyledlg.cpp:606
 msgid "Enter a character style name"
@@ -3112,7 +3096,6 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:68
-#, fuzzy
 msgid "Escape"
 msgstr "Gulsčias"
 
@@ -3126,12 +3109,12 @@ msgstr ""
 
 #: ../src/generic/dbgrptg.cpp:234
 msgid "Executable files (*.exe)|*.exe|"
-msgstr ""
+msgstr "Vykdomieji failai (*.exe)|*.exe|"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:76 ../src/common/stockitem.cpp:155
 msgid "Execute"
-msgstr ""
+msgstr "Vykdyti"
 
 #: ../src/msw/utilsexc.cpp:892
 #, c-format
@@ -3420,12 +3403,12 @@ msgstr ""
 #: ../src/common/image.cpp:2367
 #, c-format
 msgid "Failed to load bitmap \"%s\" from resources."
-msgstr ""
+msgstr "Nepavyko įkelti taškinės grafikos \"%s\" iš resursų."
 
 #: ../src/common/image.cpp:2376
 #, c-format
 msgid "Failed to load icon \"%s\" from resources."
-msgstr ""
+msgstr "Nepavyko įkelti piktogramos \"%s\" iš resursų."
 
 #: ../src/common/iconbndl.cpp:182
 #, c-format
@@ -3536,7 +3519,7 @@ msgstr ""
 #: ../src/unix/mediactrl.cpp:1266
 #, c-format
 msgid "Failed to prepare playing \"%s\"."
-msgstr ""
+msgstr "Nepavyko paruošti grojimui \"%s\"."
 
 #: ../src/msw/clipbrd.cpp:645
 msgid "Failed to put data on the clipboard"
@@ -3673,7 +3656,7 @@ msgstr ""
 #: ../src/unix/threadpsx.cpp:1298
 #, c-format
 msgid "Failed to set thread concurrency level to %lu"
-msgstr ""
+msgstr "Nepavyko nustatyti gijų sutapimo lygmens į %lu"
 
 #: ../src/unix/threadpsx.cpp:1424
 #, c-format
@@ -3756,7 +3739,7 @@ msgstr ""
 
 #: ../src/common/stockitem.cpp:157 ../src/msw/wince/filedlgwce.cpp:121
 msgid "File"
-msgstr ""
+msgstr "Failas"
 
 #: ../src/common/docview.cpp:672
 #, c-format
@@ -3776,12 +3759,12 @@ msgstr ""
 #: ../src/common/filefn.cpp:1160
 #, c-format
 msgid "File '%s' couldn't be removed"
-msgstr ""
+msgstr "Failas '%s' negali būti pašalintas"
 
 #: ../src/common/filefn.cpp:1143
 #, c-format
 msgid "File '%s' couldn't be renamed '%s'"
-msgstr ""
+msgstr "Failas '%s' negali būti pervadintas į '%s'"
 
 #: ../src/common/textcmn.cpp:953 ../src/richtext/richtextctrl.cpp:3056
 msgid "File couldn't be loaded."
@@ -3819,7 +3802,7 @@ msgstr "Rasti"
 
 #: ../src/common/stockitem.cpp:159
 msgid "First"
-msgstr ""
+msgstr "Pirmas"
 
 #: ../src/common/prntbase.cpp:1548
 msgid "First page"
@@ -3827,7 +3810,7 @@ msgstr ""
 
 #: ../src/richtext/richtextsizepage.cpp:521
 msgid "Fixed"
-msgstr ""
+msgstr "Ištaisyta"
 
 #: ../src/html/helpwnd.cpp:1206
 msgid "Fixed font:"
@@ -3860,7 +3843,7 @@ msgstr ""
 
 #: ../src/html/helpwnd.cpp:1207
 msgid "Font size:"
-msgstr ""
+msgstr "Šrifto dydis:"
 
 #: ../src/richtext/richtextfontpage.cpp:208
 msgid "Font st&yle:"
@@ -3894,7 +3877,7 @@ msgstr ""
 
 #: ../src/generic/prntdlgg.cpp:238
 msgid "From:"
-msgstr ""
+msgstr "Nuo:"
 
 #: ../src/propgrid/advprops.cpp:1565
 msgid "Fuchsia"
@@ -3924,7 +3907,7 @@ msgstr ""
 msgid ""
 "GTK+ installed on this machine is too old to support screen compositing, "
 "please install GTK+ 2.12 or later."
-msgstr ""
+msgstr "GTK+ įdiegtas šiame kompiuteryje yra per senas, kad palaikytų komponavimą ekrane, prašome instaliuoti GTK+ 2.12 arba naujesnį."
 
 #: ../src/univ/themes/gtk.cpp:525
 msgid "GTK+ theme"
@@ -3932,7 +3915,7 @@ msgstr ""
 
 #: ../src/common/preferencescmn.cpp:40
 msgid "General"
-msgstr ""
+msgstr "Bendra"
 
 #: ../src/common/prntbase.cpp:258
 msgid "Generic PostScript"
@@ -3997,7 +3980,7 @@ msgstr ""
 
 #: ../src/propgrid/advprops.cpp:1561
 msgid "Green"
-msgstr ""
+msgstr "Žalia"
 
 #: ../src/richtext/richtextborderspage.cpp:618
 msgid "Groove"
@@ -4076,9 +4059,9 @@ msgid "Help: %s"
 msgstr ""
 
 #: ../src/osx/menu_osx.cpp:615
-#, fuzzy, c-format
+#, c-format
 msgid "Hide %s"
-msgstr "Slėpti"
+msgstr "Slėpti %s"
 
 #: ../src/osx/menu_osx.cpp:617
 msgid "Hide Others"
@@ -4090,9 +4073,8 @@ msgstr ""
 
 #. TRANSLATORS: Keyword of system colour
 #: ../src/propgrid/advprops.cpp:870
-#, fuzzy
 msgid "Highlight"
-msgstr "&Aukštis:"
+msgstr "&Aukštis"
 
 #. TRANSLATORS: Keyword of system colour
 #: ../src/propgrid/advprops.cpp:871
@@ -4253,7 +4235,6 @@ msgstr ""
 
 #. TRANSLATORS: Keyword of system colour
 #: ../src/propgrid/advprops.cpp:872
-#, fuzzy
 msgid "InactiveBorder"
 msgstr "Rėmelis"
 
@@ -4302,7 +4283,6 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:52
-#, fuzzy
 msgid "Ins"
 msgstr "Įterpti"
 
@@ -4312,7 +4292,6 @@ msgid "Insert"
 msgstr "Įterpti"
 
 #: ../src/richtext/richtextbuffer.cpp:8060
-#, fuzzy
 msgid "Insert Field"
 msgstr "Įterpti"
 
@@ -4494,7 +4473,6 @@ msgstr "KP_"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:104
-#, fuzzy
 msgid "KP_Add"
 msgstr "KP_ADD"
 
@@ -4510,7 +4488,6 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:101
-#, fuzzy
 msgid "KP_Delete"
 msgstr "Ištrinti"
 
@@ -4521,19 +4498,16 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:93
-#, fuzzy
 msgid "KP_Down"
 msgstr "Žemyn"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:98
-#, fuzzy
 msgid "KP_End"
 msgstr "KP_END"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:88
-#, fuzzy
 msgid "KP_Enter"
 msgstr "Spausdintuvas"
 
@@ -4544,19 +4518,16 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:89
-#, fuzzy
 msgid "KP_Home"
 msgstr "Pagrindinis"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:100
-#, fuzzy
 msgid "KP_Insert"
 msgstr "Įterpti"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:90
-#, fuzzy
 msgid "KP_Left"
 msgstr "Kairė"
 
@@ -4567,7 +4538,6 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:97
-#, fuzzy
 msgid "KP_Next"
 msgstr "Kitas"
 
@@ -4588,7 +4558,6 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:92
-#, fuzzy
 msgid "KP_Right"
 msgstr "Dešinė"
 
@@ -4609,13 +4578,11 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:87
-#, fuzzy
 msgid "KP_Tab"
 msgstr "KP_TAB"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:91
-#, fuzzy
 msgid "KP_Up"
 msgstr "KP_UP"
 
@@ -4636,13 +4603,13 @@ msgid "Last page"
 msgstr ""
 
 #: ../src/common/log.cpp:309
-#, fuzzy, c-format
+#, c-format
 msgid "Last repeated message (\"%s\", %u time) wasn't output"
 msgid_plural "Last repeated message (\"%s\", %u times) wasn't output"
-msgstr[0] ""
-"Paskutinis pasikartojantis pranešimas (\"%s\", %lu kartų) nebuvo išvestas"
-msgstr[1] ""
-"Paskutinis pasikartojantis pranešimas (\"%s\", %lu kartų) nebuvo išvestas"
+msgstr[0] "Paskutinis pasikartojantis pranešimas (\"%s\", %u kartą) nebuvo išvestas"
+msgstr[1] "Paskutinis pasikartojantis pranešimas (\"%s\", %u kartų) nebuvo išvestas"
+msgstr[2] "Paskutinis pasikartojantis pranešimas (\"%s\", %u kartų) nebuvo išvestas"
+
 
 #: ../src/common/paper.cpp:104
 msgid "Ledger, 17 x 11 in"
@@ -4682,39 +4649,39 @@ msgstr ""
 
 #: ../src/common/paper.cpp:145
 msgid "Legal Extra 9 1/2 x 15 in"
-msgstr ""
+msgstr "Legalus Ekstra 9 1/2 x 15 colių"
 
 #: ../src/common/paper.cpp:97
 msgid "Legal, 8 1/2 x 14 in"
-msgstr ""
+msgstr "Legalus, 8 1/2 x 14 colių"
 
 #: ../src/common/paper.cpp:144
 msgid "Letter Extra 9 1/2 x 12 in"
-msgstr ""
+msgstr "Laiškas Ekstra 9 1/2 x 12 colių"
 
 #: ../src/common/paper.cpp:150
 msgid "Letter Extra Transverse 9.275 x 12 in"
-msgstr ""
+msgstr "Laiškas Ekstra Skerscoliųis 9.275 x 12 colių"
 
 #: ../src/common/paper.cpp:153
 msgid "Letter Plus 8 1/2 x 12.69 in"
-msgstr ""
+msgstr "Laiškas Plius 8 1/2 x 12.69 colių"
 
 #: ../src/common/paper.cpp:170
 msgid "Letter Rotated 11 x 8 1/2 in"
-msgstr ""
+msgstr "Laiškas Pasuktas 11 x 8 1/2 colių"
 
 #: ../src/common/paper.cpp:102
 msgid "Letter Small, 8 1/2 x 11 in"
-msgstr ""
+msgstr "Laiškas Mažas, 8 1/2 x 11 colių"
 
 #: ../src/common/paper.cpp:148
 msgid "Letter Transverse 8 1/2 x 11 in"
-msgstr ""
+msgstr "Laiškas Skerscoliųis 8 1/2 x 11 colių"
 
 #: ../src/common/paper.cpp:96
 msgid "Letter, 8 1/2 x 11 in"
-msgstr ""
+msgstr "Laiškas, 8 1/2 x 11 colių"
 
 #: ../src/generic/aboutdlgg.cpp:173
 msgid "License"
@@ -4743,7 +4710,7 @@ msgstr ""
 
 #: ../src/richtext/richtextformatdlg.cpp:367
 msgid "List Style"
-msgstr ""
+msgstr "Sąrašo stilius"
 
 #: ../src/richtext/richtextstyles.cpp:1064
 msgid "List styles"
@@ -4990,19 +4957,17 @@ msgid "Match case"
 msgstr "Skirti didžiąsias"
 
 #: ../src/richtext/richtextsizepage.cpp:463
-#, fuzzy
 msgid "Max height:"
 msgstr "&Aukštis:"
 
 #: ../src/richtext/richtextsizepage.cpp:436
-#, fuzzy
 msgid "Max width:"
 msgstr "Pakeisti kuo:"
 
 #: ../src/unix/mediactrl.cpp:1004
 #, c-format
 msgid "Media playback error: %s"
-msgstr ""
+msgstr "Medijos grojimo klaida: %s"
 
 #: ../src/common/fs_mem.cpp:175
 #, c-format
@@ -5038,13 +5003,12 @@ msgid "Middle Button"
 msgstr ""
 
 #: ../src/richtext/richtextsizepage.cpp:409
-#, fuzzy
 msgid "Min height:"
 msgstr "&Aukštis:"
 
 #: ../src/richtext/richtextsizepage.cpp:382
 msgid "Min width:"
-msgstr ""
+msgstr "Min. plotis:"
 
 #: ../src/msw/ole/automtn.cpp:674
 msgid "Missing a required parameter."
@@ -5107,11 +5071,11 @@ msgstr "Tinklas"
 
 #: ../src/common/stockitem.cpp:176
 msgid "New"
-msgstr ""
+msgstr "Naujas"
 
 #: ../src/richtext/richtextstyledlg.cpp:243
 msgid "New &Box Style..."
-msgstr ""
+msgstr "Naujas &Dėžutės stilius..."
 
 #: ../src/richtext/richtextstyledlg.cpp:225
 msgid "New &Character Style..."
@@ -5268,7 +5232,7 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:248
 #: ../src/richtext/richtextsizepage.cpp:252
 msgid "None"
-msgstr ""
+msgstr "Joks"
 
 #: ../src/common/fmapbase.cpp:157
 msgid "Nordic (ISO-8859-10)"
@@ -5310,37 +5274,37 @@ msgstr ""
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:103
 msgid "Num *"
-msgstr ""
+msgstr "Num *"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:104
 msgid "Num +"
-msgstr ""
+msgstr "Num +"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:105
 msgid "Num ,"
-msgstr ""
+msgstr "Num ,"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:106
 msgid "Num -"
-msgstr ""
+msgstr "Num -"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:107
 msgid "Num ."
-msgstr ""
+msgstr "Num ."
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:108
 msgid "Num /"
-msgstr ""
+msgstr "Num /"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:102
 msgid "Num ="
-msgstr ""
+msgstr "Num ="
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:99
@@ -5349,13 +5313,11 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:101
-#, fuzzy
 msgid "Num Delete"
 msgstr "Ištrinti"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:93
-#, fuzzy
 msgid "Num Down"
 msgstr "Žemyn"
 
@@ -5371,13 +5333,11 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:89
-#, fuzzy
 msgid "Num Home"
 msgstr "Pagrindinis"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:100
-#, fuzzy
 msgid "Num Insert"
 msgstr "Įterpti"
 
@@ -5398,7 +5358,6 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:92
-#, fuzzy
 msgid "Num Right"
 msgstr "Dešinė"
 
@@ -5441,7 +5400,7 @@ msgstr ""
 #: ../src/msw/msgdlg.cpp:476 ../src/msw/msgdlg.cpp:775
 #: ../src/richtext/richtextstyledlg.cpp:297
 msgid "OK"
-msgstr "OK"
+msgstr "GERAI"
 
 #: ../src/msw/ole/automtn.cpp:698
 #, c-format
@@ -5578,107 +5537,107 @@ msgstr ""
 
 #: ../src/common/paper.cpp:188
 msgid "PRC 16K 146 x 215 mm"
-msgstr ""
+msgstr "PRC 16K 146 x 215 mm"
 
 #: ../src/common/paper.cpp:201
 msgid "PRC 16K Rotated"
-msgstr ""
+msgstr "PRC 16K Pasuktas"
 
 #: ../src/common/paper.cpp:189
 msgid "PRC 32K 97 x 151 mm"
-msgstr ""
+msgstr "PRC 32K 97 x 151 mm"
 
 #: ../src/common/paper.cpp:202
 msgid "PRC 32K Rotated"
-msgstr ""
+msgstr "PRC 32K Pasuktas"
 
 #: ../src/common/paper.cpp:190
 msgid "PRC 32K(Big) 97 x 151 mm"
-msgstr ""
+msgstr "PRC 32K(Big) 97 x 151 mm"
 
 #: ../src/common/paper.cpp:203
 msgid "PRC 32K(Big) Rotated"
-msgstr ""
+msgstr "PRC 32K(Big) Pasuktas"
 
 #: ../src/common/paper.cpp:191
 msgid "PRC Envelope #1 102 x 165 mm"
-msgstr ""
+msgstr "PRC Vokas #1 102 x 165 mm"
 
 #: ../src/common/paper.cpp:204
 msgid "PRC Envelope #1 Rotated 165 x 102 mm"
-msgstr ""
+msgstr "PRC Vokas #1 Pasuktas 165 x 102 mm"
 
 #: ../src/common/paper.cpp:200
 msgid "PRC Envelope #10 324 x 458 mm"
-msgstr ""
+msgstr "PRC Vokas #10 324 x 458 mm"
 
 #: ../src/common/paper.cpp:213
 msgid "PRC Envelope #10 Rotated 458 x 324 mm"
-msgstr ""
+msgstr "PRC Vokas #10 Pasuktas 458 x 324 mm"
 
 #: ../src/common/paper.cpp:192
 msgid "PRC Envelope #2 102 x 176 mm"
-msgstr ""
+msgstr "PRC Vokas #2 102 x 176 mm"
 
 #: ../src/common/paper.cpp:205
 msgid "PRC Envelope #2 Rotated 176 x 102 mm"
-msgstr ""
+msgstr "PRC Vokas #2 Pasuktas 176 x 102 mm"
 
 #: ../src/common/paper.cpp:193
 msgid "PRC Envelope #3 125 x 176 mm"
-msgstr ""
+msgstr "PRC Vokas #3 125 x 176 mm"
 
 #: ../src/common/paper.cpp:206
 msgid "PRC Envelope #3 Rotated 176 x 125 mm"
-msgstr ""
+msgstr "PRC Vokas #3 Pasuktas 176 x 125 mm"
 
 #: ../src/common/paper.cpp:194
 msgid "PRC Envelope #4 110 x 208 mm"
-msgstr ""
+msgstr "PRC Vokas #4 110 x 208 mm"
 
 #: ../src/common/paper.cpp:207
 msgid "PRC Envelope #4 Rotated 208 x 110 mm"
-msgstr ""
+msgstr "PRC Vokas #4 Pasuktas 208 x 110 mm"
 
 #: ../src/common/paper.cpp:195
 msgid "PRC Envelope #5 110 x 220 mm"
-msgstr ""
+msgstr "PRC Vokas #5 110 x 220 mm"
 
 #: ../src/common/paper.cpp:208
 msgid "PRC Envelope #5 Rotated 220 x 110 mm"
-msgstr ""
+msgstr "PRC Vokas #5 Pasuktas 220 x 110 mm"
 
 #: ../src/common/paper.cpp:196
 msgid "PRC Envelope #6 120 x 230 mm"
-msgstr ""
+msgstr "PRC Vokas #6 120 x 230 mm"
 
 #: ../src/common/paper.cpp:209
 msgid "PRC Envelope #6 Rotated 230 x 120 mm"
-msgstr ""
+msgstr "PRC Vokas #6 Pasuktas 230 x 120 mm"
 
 #: ../src/common/paper.cpp:197
 msgid "PRC Envelope #7 160 x 230 mm"
-msgstr ""
+msgstr "PRC Vokas #7 160 x 230 mm"
 
 #: ../src/common/paper.cpp:210
 msgid "PRC Envelope #7 Rotated 230 x 160 mm"
-msgstr ""
+msgstr "PRC Vokas #7 Pasuktas 230 x 160 mm"
 
 #: ../src/common/paper.cpp:198
 msgid "PRC Envelope #8 120 x 309 mm"
-msgstr ""
+msgstr "PRC Vokas #8 120 x 309 mm"
 
 #: ../src/common/paper.cpp:211
 msgid "PRC Envelope #8 Rotated 309 x 120 mm"
-msgstr ""
+msgstr "PRC Vokas #8 Pasuktas 309 x 120 mm"
 
 #: ../src/common/paper.cpp:199
 msgid "PRC Envelope #9 229 x 324 mm"
-msgstr ""
+msgstr "PRC Vokas #9 229 x 324 mm"
 
 #: ../src/common/paper.cpp:212
 msgid "PRC Envelope #9 Rotated 324 x 229 mm"
-msgstr ""
+msgstr "PRC Vokas #9 Pasuktas 324 x 229 mm"
 
 #: ../src/richtext/richtextmarginspage.cpp:285
 msgid "Padding"
@@ -5696,13 +5655,12 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:56
-#, fuzzy
 msgid "Page Down"
 msgstr "Žemyn"
 
 #: ../src/gtk/print.cpp:810
 msgid "Page Setup"
-msgstr ""
+msgstr "Puslapio sąranka"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:55
@@ -5711,11 +5669,10 @@ msgstr ""
 
 #: ../src/common/prntbase.cpp:484 ../src/generic/prntdlgg.cpp:828
 msgid "Page setup"
-msgstr ""
+msgstr "Puslapio sąranka"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:56
-#, fuzzy
 msgid "PageDown"
 msgstr "Žemyn"
 
@@ -5749,7 +5706,7 @@ msgstr ""
 
 #: ../src/common/xtistrm.cpp:480
 msgid "Passing an unknown object to GetObject"
-msgstr ""
+msgstr "Netinkamas objektas perduodamas GetObject"
 
 #: ../src/common/stockitem.cpp:180 ../src/richtext/richtextctrl.cpp:3488
 #: ../src/stc/stc_i18n.cpp:19
@@ -5782,12 +5739,12 @@ msgstr ""
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:58
 msgid "PgDn"
-msgstr ""
+msgstr "PgDn"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:57
 msgid "PgUp"
-msgstr ""
+msgstr "PgUp"
 
 #: ../src/richtext/richtextbuffer.cpp:12815
 msgid "Picture Properties"
@@ -5827,7 +5784,7 @@ msgstr ""
 
 #: ../src/common/prntbase.cpp:538
 msgid "Please wait while printing..."
-msgstr ""
+msgstr "Prašome palaukti kol spausdinama..."
 
 #. TRANSLATORS: System cursor name
 #: ../src/propgrid/advprops.cpp:1728
@@ -5836,9 +5793,8 @@ msgstr ""
 
 #. TRANSLATORS: System cursor name
 #: ../src/propgrid/advprops.cpp:1729
-#, fuzzy
 msgid "Point Right"
-msgstr "&Aukštis:"
+msgstr "&Aukštis"
 
 #. TRANSLATORS: Label of font point size
 #: ../src/propgrid/advprops.cpp:648
@@ -5884,7 +5840,7 @@ msgstr ""
 
 #: ../src/common/prntbase.cpp:546
 msgid "Preparing"
-msgstr ""
+msgstr "Ruošiamasi"
 
 #: ../src/generic/fontdlgg.cpp:455 ../src/html/helpwnd.cpp:1222
 #: ../src/osx/carbon/fontdlg.cpp:560
@@ -5925,18 +5881,16 @@ msgid "Print in colour"
 msgstr ""
 
 #: ../src/common/stockitem.cpp:182
-#, fuzzy
 msgid "Print previe&w..."
-msgstr "Spausdinimo peržiūra"
+msgstr "&Spausdinimo peržiūra..."
 
 #: ../src/common/docview.cpp:1265
 msgid "Print preview creation failed."
 msgstr ""
 
 #: ../src/common/stockitem.cpp:182
-#, fuzzy
 msgid "Print preview..."
-msgstr "Spausdinimo peržiūra"
+msgstr "Spausdinimo peržiūra..."
 
 #: ../src/generic/prntdlgg.cpp:630
 msgid "Print spooling"
@@ -5999,7 +5953,7 @@ msgstr ""
 #: ../src/common/prntbase.cpp:570
 #, c-format
 msgid "Printing page %d of %d"
-msgstr ""
+msgstr "Spausdinamas puslapis %d iš %d"
 
 #: ../src/generic/printps.cpp:201
 #, c-format
@@ -6027,11 +5981,11 @@ msgstr ""
 
 #: ../src/common/prntbase.cpp:545
 msgid "Progress:"
-msgstr ""
+msgstr "Progresas:"
 
 #: ../src/common/stockitem.cpp:184
 msgid "Properties"
-msgstr ""
+msgstr "Savybės"
 
 #: ../src/propgrid/manager.cpp:237
 msgid "Property"
@@ -6064,9 +6018,9 @@ msgid "Quit"
 msgstr "Išeiti"
 
 #: ../src/osx/menu_osx.cpp:623
-#, fuzzy, c-format
+#, c-format
 msgid "Quit %s"
-msgstr "Išeiti"
+msgstr "Išeiti %s"
 
 #: ../src/common/stockitem.cpp:263
 msgid "Quit this program"
@@ -6074,7 +6028,7 @@ msgstr ""
 
 #: ../src/common/accelcmn.cpp:328
 msgid "RawCtrl+"
-msgstr ""
+msgstr "RawCtrl+"
 
 #: ../src/common/ffile.cpp:109 ../src/common/ffile.cpp:133
 #, c-format
@@ -6086,9 +6040,8 @@ msgid "Ready"
 msgstr "Pasiruošęs"
 
 #: ../src/propgrid/advprops.cpp:1566
-#, fuzzy
 msgid "Red"
-msgstr "Grąžinti atšauktą"
+msgstr "Raudonas"
 
 #: ../src/common/stockitem.cpp:185 ../src/stc/stc_i18n.cpp:16
 msgid "Redo"
@@ -6100,7 +6053,7 @@ msgstr ""
 
 #: ../src/common/stockitem.cpp:186
 msgid "Refresh"
-msgstr ""
+msgstr "Atnaujinti"
 
 #: ../src/msw/registry.cpp:618
 #, c-format
@@ -6132,7 +6085,7 @@ msgstr "Įprastas"
 
 #: ../src/richtext/richtextsizepage.cpp:519
 msgid "Relative"
-msgstr ""
+msgstr "Santykinis"
 
 #: ../src/generic/helpext.cpp:458
 msgid "Relevant entries:"
@@ -6147,9 +6100,8 @@ msgid "Remove"
 msgstr "Pašalinti"
 
 #: ../src/richtext/richtextctrl.cpp:1539
-#, fuzzy
 msgid "Remove Bullet"
-msgstr "Pašalinti"
+msgstr "Pašalinti ženklelį"
 
 #: ../src/html/helpwnd.cpp:433
 msgid "Remove current page from bookmarks"
@@ -6162,7 +6114,7 @@ msgstr ""
 
 #: ../src/osx/carbon/dataview.cpp:1428
 msgid "Rendering failed."
-msgstr ""
+msgstr "Apdorojimas nepavyko."
 
 #: ../src/richtext/richtextbuffer.cpp:4521
 msgid "Renumber List"
@@ -6186,7 +6138,7 @@ msgstr ""
 
 #: ../src/generic/fdrepdlg.cpp:124
 msgid "Replace with:"
-msgstr "Pakeisti kuo:"
+msgstr "Pakeisti šiuo:"
 
 #: ../src/common/valtext.cpp:163
 msgid "Required information entry is empty."
@@ -6223,7 +6175,6 @@ msgstr "Dešinė"
 
 #. TRANSLATORS: System cursor name
 #: ../src/propgrid/advprops.cpp:1715
-#, fuzzy
 msgid "Right Arrow"
 msgstr "Dešinė"
 
@@ -6258,17 +6209,16 @@ msgstr ""
 
 #: ../src/common/sizer.cpp:2807 ../src/common/stockitem.cpp:190
 msgid "Save"
-msgstr ""
+msgstr "Išsaugoti"
 
 #: ../src/common/fldlgcmn.cpp:342
 #, c-format
 msgid "Save %s file"
-msgstr ""
+msgstr "Išsaugoti %s failą"
 
 #: ../src/generic/logg.cpp:518
-#, fuzzy
 msgid "Save &As..."
-msgstr "Išsaugoti kaip"
+msgstr "Išs&augoti kaip..."
 
 #: ../src/common/docview.cpp:366
 msgid "Save As"
@@ -6280,15 +6230,15 @@ msgstr "Išsaugoti kaip"
 
 #: ../src/common/stockitem.cpp:267
 msgid "Save current document"
-msgstr ""
+msgstr "Išsaugoti aktyvų dokumentą"
 
 #: ../src/common/stockitem.cpp:268
 msgid "Save current document with a different filename"
-msgstr ""
+msgstr "Išsaugoti aktyvų dokumentą kitu pavadinimu"
 
 #: ../src/generic/logg.cpp:518
 msgid "Save log contents to file"
-msgstr ""
+msgstr "Išsaugoti žurnalo turinį į failą"
 
 #: ../src/generic/fontdlgg.cpp:325
 msgid "Script"
@@ -6297,22 +6247,22 @@ msgstr "SCRIPT"
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:85
 msgid "Scroll Lock"
-msgstr ""
+msgstr "Perslinkimo užrakinimas"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:85
 msgid "Scroll_lock"
-msgstr ""
+msgstr "Perslinkimo_užrakinimas"
 
 #. TRANSLATORS: Keyword of system colour
 #: ../src/propgrid/advprops.cpp:876
 msgid "Scrollbar"
-msgstr ""
+msgstr "Slinkties juosta"
 
 #: ../src/generic/srchctlg.cpp:56 ../src/html/helpwnd.cpp:535
 #: ../src/html/helpwnd.cpp:550
 msgid "Search"
-msgstr ""
+msgstr "Ieškoti"
 
 #: ../src/html/helpwnd.cpp:537
 msgid ""
@@ -6352,9 +6302,8 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:74
-#, fuzzy
 msgid "Select"
-msgstr "Objektų parinktis"
+msgstr "Parinkti"
 
 #: ../src/common/stockitem.cpp:192 ../src/msw/textctrl.cpp:2450
 #: ../src/osx/textctrl_osx.cpp:587 ../src/richtext/richtextctrl.cpp:337
@@ -6390,7 +6339,7 @@ msgstr ""
 
 #: ../src/motif/filedlg.cpp:220
 msgid "Selection"
-msgstr "Objektų parinktis"
+msgstr "Parinktis"
 
 #: ../src/richtext/richtextliststylepage.cpp:187
 #: ../src/richtext/richtextliststylepage.cpp:189
@@ -6400,7 +6349,7 @@ msgstr ""
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:80
 msgid "Separator"
-msgstr ""
+msgstr "Skirtukas"
 
 #: ../src/common/cmdline.cpp:1083
 #, c-format
@@ -6445,7 +6394,7 @@ msgstr ""
 
 #: ../src/common/accelcmn.cpp:325
 msgid "Shift+"
-msgstr ""
+msgstr "Shift+"
 
 #: ../src/generic/dirdlgg.cpp:170
 msgid "Show &hidden directories"
@@ -6576,7 +6525,7 @@ msgstr ""
 
 #: ../src/richtext/richtextborderspage.cpp:614
 msgid "Solid"
-msgstr ""
+msgstr "Kūnas"
 
 #: ../src/common/docview.cpp:1794
 msgid "Sorry, could not open this file."
@@ -6609,9 +6558,8 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:65
-#, fuzzy
 msgid "Space"
-msgstr "Tarpai"
+msgstr "Tarpas"
 
 #: ../src/richtext/richtextliststylepage.cpp:467
 msgid "Spacing"
@@ -6642,7 +6590,7 @@ msgstr ""
 
 #: ../src/generic/prntdlgg.cpp:204
 msgid "Status:"
-msgstr ""
+msgstr "Būsena:"
 
 #: ../src/common/stockitem.cpp:198
 msgid "Stop"
@@ -6677,7 +6625,7 @@ msgstr ""
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:81
 msgid "Subtract"
-msgstr ""
+msgstr "Atimti"
 
 #: ../src/richtext/richtextfontpage.cpp:296
 msgid "Supe&rscript"
@@ -6685,11 +6633,11 @@ msgstr ""
 
 #: ../src/common/paper.cpp:151
 msgid "SuperA/SuperA/A4 227 x 356 mm"
-msgstr ""
+msgstr "SuperA/SuperA/A4 227 x 356 mm"
 
 #: ../src/common/paper.cpp:152
 msgid "SuperB/SuperB/A3 305 x 487 mm"
-msgstr ""
+msgstr "SuperB/SuperB/A3 305 x 487 mm"
 
 #: ../src/richtext/richtextfontpage.cpp:320
 msgid "Suppress hyphe&nation"
@@ -6710,7 +6658,6 @@ msgid "Symbol &font:"
 msgstr ""
 
 #: ../include/wx/richtext/richtextsymboldlg.h:47
-#, fuzzy
 msgid "Symbols"
 msgstr "Simbolis"
 
@@ -6839,7 +6786,7 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:653
 #: ../src/richtext/richtextsizepage.cpp:655
 msgid "The bottom position."
-msgstr ""
+msgstr "Apatinė pozicija."
 
 #: ../src/richtext/richtextbulletspage.cpp:191
 #: ../src/richtext/richtextbulletspage.cpp:193
@@ -6934,7 +6881,7 @@ msgstr ""
 #: ../src/richtext/richtextfontpage.cpp:181
 #: ../src/richtext/richtextfontpage.cpp:183
 msgid "The font size units, points or pixels."
-msgstr ""
+msgstr "Šrifto dydžio vienetai, punktai arba taškai."
 
 #: ../src/generic/fontdlgg.cpp:386 ../src/generic/fontdlgg.cpp:388
 msgid "The font style."
@@ -6951,9 +6898,8 @@ msgstr ""
 
 #: ../src/richtext/richtextbackgroundpage.cpp:220
 #: ../src/richtext/richtextbackgroundpage.cpp:222
-#, fuzzy
 msgid "The horizontal offset."
-msgstr "Išdėstyti &horizontaliai"
+msgstr "Išdėstyti &horizontaliai."
 
 #: ../src/richtext/richtextindentspage.cpp:199
 #: ../src/richtext/richtextindentspage.cpp:201
@@ -6977,7 +6923,7 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:548
 #: ../src/richtext/richtextsizepage.cpp:550
 msgid "The left position."
-msgstr ""
+msgstr "Kairė pozicija."
 
 #: ../src/richtext/richtextindentspage.cpp:288
 #: ../src/richtext/richtextindentspage.cpp:290
@@ -7003,22 +6949,22 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:474
 #: ../src/richtext/richtextsizepage.cpp:476
 msgid "The object maximum height."
-msgstr ""
+msgstr "Maksimalus objekto aukštis."
 
 #: ../src/richtext/richtextsizepage.cpp:447
 #: ../src/richtext/richtextsizepage.cpp:449
 msgid "The object maximum width."
-msgstr ""
+msgstr "Maksimalus objekto plotis."
 
 #: ../src/richtext/richtextsizepage.cpp:420
 #: ../src/richtext/richtextsizepage.cpp:422
 msgid "The object minimum height."
-msgstr ""
+msgstr "Minimalus objekto aukštis."
 
 #: ../src/richtext/richtextsizepage.cpp:393
 #: ../src/richtext/richtextsizepage.cpp:395
 msgid "The object minimum width."
-msgstr ""
+msgstr "Minimalus objekto plotis."
 
 #: ../src/richtext/richtextsizepage.cpp:332
 #: ../src/richtext/richtextsizepage.cpp:334
@@ -7031,11 +6977,13 @@ msgid "The outline level."
 msgstr ""
 
 #: ../src/common/log.cpp:281
-#, fuzzy, c-format
+#, c-format
 msgid "The previous message repeated %u time."
 msgid_plural "The previous message repeated %u times."
-msgstr[0] "Ankstesnis pranešimas pakartotas %lu kartų."
-msgstr[1] "Ankstesnis pranešimas pakartotas %lu kartų."
+msgstr[0] "Ankstesnis pranešimas pakartotas %u kartą."
+msgstr[1] "Ankstesnis pranešimas pakartotas %u kartų."
+msgstr[2] "Ankstesnis pranešimas pakartotas %u kartų."
+
 
 #: ../src/common/log.cpp:274
 msgid "The previous message repeated once."
@@ -7080,7 +7028,7 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:618
 #: ../src/richtext/richtextsizepage.cpp:620
 msgid "The right position."
-msgstr ""
+msgstr "Dešinė pozicija."
 
 #: ../src/richtext/richtextbackgroundpage.cpp:310
 #: ../src/richtext/richtextbackgroundpage.cpp:312
@@ -7162,7 +7110,7 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:583
 #: ../src/richtext/richtextsizepage.cpp:585
 msgid "The top position."
-msgstr ""
+msgstr "Viršutinė pozicija."
 
 #: ../src/common/cmdline.cpp:1232
 #, c-format
@@ -7208,13 +7156,13 @@ msgstr ""
 
 #: ../src/common/wincmn.cpp:1670
 msgid "This platform does not support background transparency."
-msgstr ""
+msgstr "Platforma nepalaiko permatomo fono."
 
 #: ../src/gtk/window.cpp:4568
 msgid ""
 "This program was compiled with a too old version of GTK+, please rebuild "
 "with GTK+ 2.12 or newer."
-msgstr ""
+msgstr "Ši programa buvo sukompiliuota su sena GKT+ versija, prašome sukompiliuoti ją su GTK+ 2.12 arba naujesne versija."
 
 #: ../src/msw/datecontrols.cpp:59
 msgid ""
@@ -7573,7 +7521,7 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:664
 #: ../src/richtext/richtextsizepage.cpp:666
 msgid "Units for the bottom position."
-msgstr ""
+msgstr "Apatinės pozicijos vienetai."
 
 #: ../src/richtext/richtextborderspage.cpp:599
 #: ../src/richtext/richtextborderspage.cpp:601
@@ -7603,27 +7551,27 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:559
 #: ../src/richtext/richtextsizepage.cpp:561
 msgid "Units for the left position."
-msgstr ""
+msgstr "Kairės pozicijos vienetai."
 
 #: ../src/richtext/richtextsizepage.cpp:485
 #: ../src/richtext/richtextsizepage.cpp:487
 msgid "Units for the maximum object height."
-msgstr ""
+msgstr "Maksimalaus objekto aukščio vienetai."
 
 #: ../src/richtext/richtextsizepage.cpp:458
 #: ../src/richtext/richtextsizepage.cpp:460
 msgid "Units for the maximum object width."
-msgstr ""
+msgstr "Maksimalaus objekto pločio vienetai."
 
 #: ../src/richtext/richtextsizepage.cpp:431
 #: ../src/richtext/richtextsizepage.cpp:433
 msgid "Units for the minimum object height."
-msgstr ""
+msgstr "Minimalaus objekto aukščio vienetai."
 
 #: ../src/richtext/richtextsizepage.cpp:404
 #: ../src/richtext/richtextsizepage.cpp:406
 msgid "Units for the minimum object width."
-msgstr ""
+msgstr "Minimalaus objekto pločio vienetai."
 
 #: ../src/richtext/richtextsizepage.cpp:377
 #: ../src/richtext/richtextsizepage.cpp:379
@@ -7658,7 +7606,7 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:629
 #: ../src/richtext/richtextsizepage.cpp:631
 msgid "Units for the right position."
-msgstr ""
+msgstr "Dešinės pozicijos vienetai."
 
 #: ../src/richtext/richtextborderspage.cpp:328
 #: ../src/richtext/richtextborderspage.cpp:330
@@ -7683,7 +7631,7 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:594
 #: ../src/richtext/richtextsizepage.cpp:596
 msgid "Units for the top position."
-msgstr ""
+msgstr "Viršutinės pozicijos vienetai."
 
 #: ../src/richtext/richtextbackgroundpage.cpp:231
 #: ../src/richtext/richtextbackgroundpage.cpp:233
@@ -7886,7 +7834,7 @@ msgstr ""
 
 #: ../src/common/log.cpp:227
 msgid "Warning: "
-msgstr "Perspėjimas "
+msgstr "Perspėjimas: "
 
 #. TRANSLATORS: System cursor name
 #: ../src/propgrid/advprops.cpp:1739
@@ -7912,7 +7860,7 @@ msgstr ""
 
 #: ../src/propgrid/advprops.cpp:1572
 msgid "White"
-msgstr ""
+msgstr "Balta"
 
 #: ../src/generic/fdrepdlg.cpp:144
 msgid "Whole word"
@@ -7932,65 +7880,59 @@ msgstr ""
 
 #. TRANSLATORS: Keyword of system colour
 #: ../src/propgrid/advprops.cpp:879
-#, fuzzy
 msgid "Window"
 msgstr "&Langas"
 
 #. TRANSLATORS: Keyword of system colour
 #: ../src/propgrid/advprops.cpp:880
-#, fuzzy
 msgid "WindowFrame"
 msgstr "&Langas"
 
 #. TRANSLATORS: Keyword of system colour
 #: ../src/propgrid/advprops.cpp:881
-#, fuzzy
 msgid "WindowText"
 msgstr "&Langas"
 
 #: ../src/msw/utils.cpp:1233
-#, fuzzy
 msgid "Windows 10"
 msgstr "&Langas"
 
 #: ../src/msw/utils.cpp:1183
 msgid "Windows 2000"
-msgstr ""
+msgstr "Windows 2000"
 
 #: ../src/msw/utils.cpp:1215
 msgid "Windows 7"
-msgstr ""
+msgstr "Windows 7"
 
 #: ../src/msw/utils.cpp:1221
-#, fuzzy
 msgid "Windows 8"
 msgstr "&Langas"
 
 #: ../src/msw/utils.cpp:1227
-#, fuzzy
 msgid "Windows 8.1"
 msgstr "&Langas"
 
 #: ../src/msw/utils.cpp:1147
 msgid "Windows 95"
-msgstr ""
+msgstr "Windows 95"
 
 #: ../src/msw/utils.cpp:1143
 msgid "Windows 95 OSR2"
-msgstr ""
+msgstr "Windows 95 OSR2"
 
 #: ../src/msw/utils.cpp:1158
 msgid "Windows 98"
-msgstr ""
+msgstr "Windows 98"
 
 #: ../src/msw/utils.cpp:1154
 msgid "Windows 98 SE"
-msgstr ""
+msgstr "Windows 98 SE"
 
 #: ../src/msw/utils.cpp:1165
 #, c-format
 msgid "Windows 9x (%d.%d)"
-msgstr ""
+msgstr "Windows 9x (%d.%d)"
 
 #: ../src/common/fmapbase.cpp:177
 msgid "Windows Arabic (CP 1256)"
@@ -8035,7 +7977,7 @@ msgstr ""
 
 #: ../src/common/fmapbase.cpp:180
 msgid "Windows Johab (CP 1361)"
-msgstr ""
+msgstr "Windows Johab (CP 1361)"
 
 #: ../src/common/fmapbase.cpp:169
 msgid "Windows Korean (CP 949)"
@@ -8043,37 +7985,36 @@ msgstr ""
 
 #: ../src/msw/utils.cpp:1162
 msgid "Windows ME"
-msgstr ""
+msgstr "Windows ME"
 
 #: ../src/msw/utils.cpp:1241
 #, c-format
 msgid "Windows NT %lu.%lu"
-msgstr ""
+msgstr "Windows NT %lu.%lu"
 
 #: ../src/msw/utils.cpp:1232
-#, fuzzy
 msgid "Windows Server 10"
 msgstr "&Langas"
 
 #: ../src/msw/utils.cpp:1192
 msgid "Windows Server 2003"
-msgstr ""
+msgstr "Windows Server 2003"
 
 #: ../src/msw/utils.cpp:1208
 msgid "Windows Server 2008"
-msgstr ""
+msgstr "Windows Server 2008"
 
 #: ../src/msw/utils.cpp:1214
 msgid "Windows Server 2008 R2"
-msgstr ""
+msgstr "Windows Server 2008 R2"
 
 #: ../src/msw/utils.cpp:1220
 msgid "Windows Server 2012"
-msgstr ""
+msgstr "Windows Server 2012"
 
 #: ../src/msw/utils.cpp:1226
 msgid "Windows Server 2012 R2"
-msgstr ""
+msgstr "Windows Server 2012 R2"
 
 #: ../src/common/fmapbase.cpp:166
 msgid "Windows Thai (CP 874)"
@@ -8085,11 +8026,11 @@ msgstr ""
 
 #: ../src/common/fmapbase.cpp:179
 msgid "Windows Vietnamese (CP 1258)"
-msgstr ""
+msgstr "Windows Vietnamese (CP 1258)"
 
 #: ../src/msw/utils.cpp:1209
 msgid "Windows Vista"
-msgstr ""
+msgstr "Windows Vista"
 
 #: ../src/common/fmapbase.cpp:173
 msgid "Windows Western European (CP 1252)"
@@ -8097,7 +8038,7 @@ msgstr ""
 
 #: ../src/msw/utils.cpp:1198
 msgid "Windows XP"
-msgstr ""
+msgstr "Windows XP"
 
 #: ../src/common/fmapbase.cpp:181
 msgid "Windows/DOS OEM (CP 437)"
@@ -8109,19 +8050,16 @@ msgstr ""
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:109
-#, fuzzy
 msgid "Windows_Left"
 msgstr "&Langas"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:111
-#, fuzzy
 msgid "Windows_Menu"
 msgstr "&Langas"
 
 #. TRANSLATORS: Name of keyboard key
 #: ../src/common/accelcmn.cpp:110
-#, fuzzy
 msgid "Windows_Right"
 msgstr "&Langas"
 
@@ -8164,7 +8102,7 @@ msgstr ""
 
 #: ../src/propgrid/advprops.cpp:1571
 msgid "Yellow"
-msgstr ""
+msgstr "Geltona"
 
 #: ../include/wx/msgdlg.h:276 ../src/common/stockitem.cpp:206
 #: ../src/motif/msgdlg.cpp:196
@@ -8268,7 +8206,7 @@ msgstr ""
 
 #: ../src/common/accelcmn.cpp:185
 msgid "alt"
-msgstr ""
+msgstr "alt"
 
 #: ../src/msw/dde.cpp:1135
 msgid ""
@@ -8490,7 +8428,7 @@ msgstr ""
 #: ../src/richtext/richtextsizepage.cpp:625
 #: ../src/richtext/richtextsizepage.cpp:660
 msgid "cm"
-msgstr ""
+msgstr "cm"
 
 #: ../src/html/chm.cpp:347
 msgid "compression error"
@@ -8502,7 +8440,7 @@ msgstr ""
 
 #: ../src/common/accelcmn.cpp:183
 msgid "ctrl"
-msgstr ""
+msgstr "ctrl"
 
 #: ../src/common/cmdline.cpp:1494
 msgid "date"
@@ -8510,7 +8448,7 @@ msgstr "data"
 
 #: ../src/html/chm.cpp:349
 msgid "decompression error"
-msgstr ""
+msgstr "išspaudimo klaida"
 
 #: ../src/common/fmapbase.cpp:820 ../src/richtext/richtextstyles.cpp:780
 msgid "default"
@@ -8526,15 +8464,15 @@ msgstr ""
 
 #: ../src/common/datetimefmt.cpp:1974
 msgid "eighteenth"
-msgstr ""
+msgstr "aštuonioliktas"
 
 #: ../src/common/datetimefmt.cpp:1964
 msgid "eighth"
-msgstr ""
+msgstr "aštuntas"
 
 #: ../src/common/datetimefmt.cpp:1967
 msgid "eleventh"
-msgstr ""
+msgstr "vienuoliktas"
 
 #: ../src/common/fileconf.cpp:1860
 #, c-format
@@ -8574,11 +8512,11 @@ msgstr ""
 
 #: ../src/common/datetimefmt.cpp:1971
 msgid "fifteenth"
-msgstr ""
+msgstr "penkioliktas"
 
 #: ../src/common/datetimefmt.cpp:1961
 msgid "fifth"
-msgstr ""
+msgstr "penktas"
 
 #: ../src/common/fileconf.cpp:602
 #, c-format
@@ -8607,19 +8545,19 @@ msgstr ""
 
 #: ../src/richtext/richtextbuffer.cpp:8731
 msgid "files"
-msgstr ""
+msgstr "failai"
 
 #: ../src/common/datetimefmt.cpp:1957
 msgid "first"
-msgstr ""
+msgstr "pirmas"
 
 #: ../src/html/helpwnd.cpp:1252
 msgid "font size"
-msgstr ""
+msgstr "šrifto dydis"
 
 #: ../src/common/datetimefmt.cpp:1970
 msgid "fourteenth"
-msgstr ""
+msgstr "keturioliktas"
 
 #: ../src/common/datetimefmt.cpp:1960
 msgid "fourth"
@@ -8664,7 +8602,7 @@ msgstr "kursyvas"
 
 #: ../src/common/fontcmn.cpp:984
 msgid "light"
-msgstr ""
+msgstr "lengvas"
 
 #: ../src/common/intl.cpp:287
 #, c-format
@@ -8710,7 +8648,7 @@ msgstr "normalus"
 
 #: ../src/common/cmdline.cpp:1486
 msgid "num"
-msgstr ""
+msgstr "num"
 
 #: ../src/common/xtixml.cpp:259
 msgid "objects cannot have XML Text Nodes"
@@ -8740,7 +8678,7 @@ msgstr ""
 #: ../src/richtext/richtextfontpage.cpp:177
 #: ../src/richtext/richtextfontpage.cpp:180
 msgid "pt"
-msgstr ""
+msgstr "pt"
 
 #: ../src/richtext/richtextbackgroundpage.cpp:226
 #: ../src/richtext/richtextbackgroundpage.cpp:229
@@ -8841,7 +8779,7 @@ msgstr ""
 
 #: ../src/common/accelcmn.cpp:189
 msgid "rawctrl"
-msgstr ""
+msgstr "rawctrl"
 
 #: ../src/html/chm.cpp:333
 msgid "read error"
@@ -8879,7 +8817,7 @@ msgstr ""
 
 #: ../src/common/accelcmn.cpp:187
 msgid "shift"
-msgstr ""
+msgstr "shift"
 
 #: ../src/common/appbase.cpp:773
 msgid "show this help message"
@@ -8931,7 +8869,7 @@ msgstr ""
 
 #: ../src/common/fontcmn.cpp:980
 msgid "strikethrough"
-msgstr ""
+msgstr "perbrauktas"
 
 #: ../src/common/tarstrm.cpp:1003 ../src/common/tarstrm.cpp:1025
 #: ../src/common/tarstrm.cpp:1507 ../src/common/tarstrm.cpp:1529
@@ -8981,7 +8919,7 @@ msgstr ""
 
 #: ../src/common/fontcmn.cpp:800 ../src/common/fontcmn.cpp:976
 msgid "underlined"
-msgstr ""
+msgstr "pabrauktas"
 
 #: ../src/common/fileconf.cpp:2006
 #, c-format
@@ -9065,7 +9003,7 @@ msgstr ""
 
 #: ../src/richtext/richtextsymboldlg.cpp:434
 msgid "xxxx"
-msgstr ""
+msgstr "xxxx"
 
 #: ../src/common/datetimefmt.cpp:1764
 msgid "yesterday"
@@ -9080,156 +9018,3 @@ msgstr ""
 #: ../src/richtext/richtextliststylepage.cpp:496
 msgid "~"
 msgstr "~"
-
-#~ msgid "ADD"
-#~ msgstr "PRIDĖTI"
-
-#~ msgid "BACK"
-#~ msgstr "GALAS"
-
-#~ msgid "CANCEL"
-#~ msgstr "ATSISAKYTI"
-
-#~ msgid "COMMAND"
-#~ msgstr "KOMANDA"
-
-#~ msgid "DECIMAL"
-#~ msgstr "DEŠIMTAINIS"
-
-#~ msgid "DELETE"
-#~ msgstr "IŠTRINTI"
-
-#~ msgid "DOWN"
-#~ msgstr "ŽEMYN"
-
-#~ msgid "ENTER"
-#~ msgstr "ENTER"
-
-#~ msgid "HOME"
-#~ msgstr "PAGRINDINIS"
-
-#~ msgid "INS"
-#~ msgstr "INS"
-
-#~ msgid "KP_BEGIN"
-#~ msgstr "KP_BEGIN"
-
-#~ msgid "KP_DECIMAL"
-#~ msgstr "KP_DECIMAL"
-
-#~ msgid "KP_DELETE"
-#~ msgstr "KP_DELETE"
-
-#~ msgid "KP_DIVIDE"
-#~ msgstr "KP_DIVIDE"
-
-#~ msgid "KP_DOWN"
-#~ msgstr "KP_DOWN"
-
-#~ msgid "KP_ENTER"
-#~ msgstr "KP_ENTER"
-
-#~ msgid "KP_EQUAL"
-#~ msgstr "KP_EQUAL"
-
-#~ msgid "KP_HOME"
-#~ msgstr "KP_HOME"
-
-#~ msgid "KP_INSERT"
-#~ msgstr "KP_INSERT"
-
-#~ msgid "KP_LEFT"
-#~ msgstr "KP_LEFT"
-
-#~ msgid "KP_MULTIPLY"
-#~ msgstr "KP_MULTIPLY"
-
-#~ msgid "KP_NEXT"
-#~ msgstr "KP_NEXT"
-
-#~ msgid "KP_PAGEDOWN"
-#~ msgstr "KP_PAGEDOWN"
-
-#~ msgid "KP_PAGEUP"
-#~ msgstr "KP_PAGEUP"
-
-#~ msgid "KP_PRIOR"
-#~ msgstr "KP_PRIOR"
-
-#~ msgid "KP_RIGHT"
-#~ msgstr "KP_RIGHT"
-
-#~ msgid "KP_SEPARATOR"
-#~ msgstr "KP_SEPARATOR"
-
-#~ msgid "KP_SPACE"
-#~ msgstr "KP_SPACE"
-
-#~ msgid "KP_SUBTRACT"
-#~ msgstr "KP_SUBTRACT"
-
-#~ msgid "LEFT"
-#~ msgstr "KAIRĖ"
-
-#~ msgid "RIGHT"
-#~ msgstr "DEŠINĖ"
-
-#~ msgid "SEPARATOR"
-#~ msgstr "SKIRTUKAS"
-
-#~ msgid "SPACE"
-#~ msgstr "TARPAS"
-
-#~ msgid "UP"
-#~ msgstr "AUKŠTYN"
-
-#~ msgid "not implemented"
-#~ msgstr "neįgyvendintas"
-
-#~ msgid "Print preview"
-#~ msgstr "Spausdinimo peržiūra"
-
-#~ msgid "'"
-#~ msgstr "'"
-
-#~ msgid "1"
-#~ msgstr "1"
-
-#~ msgid "10"
-#~ msgstr "10"
-
-#~ msgid "3"
-#~ msgstr "3"
-
-#~ msgid "4"
-#~ msgstr "4"
-
-#~ msgid "5"
-#~ msgstr "5"
-
-#~ msgid "6"
-#~ msgstr "6"
-
-#~ msgid "7"
-#~ msgstr "7"
-
-#~ msgid "8"
-#~ msgstr "8"
-
-#~ msgid "9"
-#~ msgstr "9"
-
-#~ msgid "&Preview..."
-#~ msgstr "&Peržiūra..."
-
-#~ msgid "Preview..."
-#~ msgstr "Peržiūra..."
-
-#~ msgid "&Save..."
-#~ msgstr "&Išsaugoti..."
-
-#~ msgid "About "
-#~ msgstr "Apie "
-
-#~ msgid "Paper Size"
-#~ msgstr "Popieriaus dydis"

@@ -18,7 +18,6 @@
 #if wxUSE_GRAPHICS_CONTEXT
 
 #include "wx/dcgraph.h"
-#include "wx/rawbmp.h"
 
 #ifndef WX_PRECOMP
     #include "wx/icon.h"
@@ -121,20 +120,6 @@ wxGCDC::~wxGCDC()
 {
 }
 
-wxGraphicsContext* wxGCDC::GetGraphicsContext() const
-{
-    if (!m_pimpl) return NULL;
-    wxGCDCImpl *gc_impl = (wxGCDCImpl*) m_pimpl;
-    return gc_impl->GetGraphicsContext();
-}
-
-void wxGCDC::SetGraphicsContext( wxGraphicsContext* ctx )
-{
-    if (!m_pimpl) return;
-    wxGCDCImpl *gc_impl = (wxGCDCImpl*) m_pimpl;
-    gc_impl->SetGraphicsContext( ctx );
-}
-
 wxIMPLEMENT_ABSTRACT_CLASS(wxGCDCImpl, wxDCImpl);
 
 wxGCDCImpl::wxGCDCImpl( wxDC *owner ) :
@@ -169,61 +154,6 @@ wxGCDCImpl::wxGCDCImpl( wxDC *owner, const wxWindowDC& dc ) :
 wxGCDCImpl::wxGCDCImpl( wxDC *owner, const wxMemoryDC& dc ) :
    wxDCImpl( owner )
 {
-#if defined(__WXMSW__) && wxUSE_WXDIB
-    // It seems that GDI+ sets invalid values for alpha channel when used with
-    // a compatible bitmap (DDB). So we need to convert the currently selected
-    // bitmap to a DIB before using it with any GDI+ functions to ensure that
-    // we get the correct alpha channel values in it at the end.
-
-    wxBitmap bmp = dc.GetSelectedBitmap();
-    wxASSERT_MSG( bmp.IsOk(), "Should select a bitmap before creating wxGCDC" );
-
-    // We don't need to convert it if it can't have alpha at all (any depth but
-    // 32) or is already a DIB with alpha.
-    if ( bmp.GetDepth() == 32 && (!bmp.IsDIB() || !bmp.HasAlpha()) )
-    {
-        // We need to temporarily deselect this bitmap from the memory DC
-        // before modifying it.
-        const_cast<wxMemoryDC&>(dc).SelectObject(wxNullBitmap);
-
-        bmp.ConvertToDIB(); // Does nothing if already a DIB.
-
-        if( !bmp.HasAlpha() )
-        {
-            // Initialize alpha channel, even if we don't have any alpha yet,
-            // we should have correct (opaque) alpha values in it for GDI+
-            // functions to work correctly.
-            {
-                wxAlphaPixelData data(bmp);
-                if ( data )
-                {
-                    wxAlphaPixelData::Iterator p(data);
-                    for ( int y = 0; y < data.GetHeight(); y++ )
-                    {
-                        wxAlphaPixelData::Iterator rowStart = p;
-
-                        for ( int x = 0; x < data.GetWidth(); x++ )
-                        {
-                            p.Alpha() = wxALPHA_OPAQUE;
-                            ++p;
-                        }
-
-                        p = rowStart;
-                        p.OffsetY(data, 1);
-                    }
-                }
-            } // End of block modifying the bitmap.
-
-            // Using wxAlphaPixelData sets the internal "has alpha" flag but we
-            // don't really have any alpha yet, so reset it back for now.
-            bmp.ResetAlpha();
-        }
-
-        // Undo SelectObject() at the beginning of this block.
-        const_cast<wxMemoryDC&>(dc).SelectObjectAsSource(bmp);
-    }
-#endif // wxUSE_WXDIB
-
     Init(wxGraphicsContext::Create(dc));
 }
 
@@ -349,6 +279,20 @@ void wxGCDCImpl::DoSetClippingRegion( wxCoord x, wxCoord y, wxCoord w, wxCoord h
 {
     wxCHECK_RET( IsOk(), wxT("wxGCDC(cg)::DoSetClippingRegion - invalid DC") );
 
+    // Generally, renderers accept negative values of width/height
+    // but for internal calculations we need to have a box definition
+    // in the standard form, with (x,y) pointing to the top-left
+    // corner of the box and with non-negative width and height.
+    if ( w < 0 )
+    {
+        w = -w;
+        x -= (w - 1);
+    }
+    if ( h < 0 )
+    {
+        h = -h;
+        y -= (h - 1);
+    }
     m_graphicContext->Clip( x, y, w, h );
 
     wxDCImpl::DoSetClippingRegion(x, y, w, h);
@@ -402,7 +346,7 @@ void wxGCDCImpl::DestroyClippingRegion()
     m_graphicContext->SetPen( m_pen );
     m_graphicContext->SetBrush( m_brush );
 
-    m_clipping = false;
+    ResetClipping();
 }
 
 void wxGCDCImpl::DoGetSizeMM( int* width, int* height ) const
@@ -1207,9 +1151,10 @@ void wxGCDCImpl::Clear(void)
     wxCompositionMode formerMode = m_graphicContext->GetCompositionMode();
     m_graphicContext->SetCompositionMode(wxCOMPOSITION_SOURCE);
     // maximum positive coordinate Cairo can handle is 2^23 - 1
+    // Use a value slightly less than this to be sure we avoid the limit
     DoDrawRectangle(
         DeviceToLogicalX(0), DeviceToLogicalY(0),
-        DeviceToLogicalXRel(0x007fffff), DeviceToLogicalYRel(0x007fffff));
+        DeviceToLogicalXRel(0x800000 - 64), DeviceToLogicalYRel(0x800000 - 64));
     m_graphicContext->SetCompositionMode(formerMode);
     m_graphicContext->SetPen( m_pen );
     m_graphicContext->SetBrush( m_brush );

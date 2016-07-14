@@ -1241,12 +1241,19 @@ public:
     // wxStringImpl is std::string in the encoding we want
     #define wxStringToStdStringRetType const std::string&
     const std::string& ToStdString() const { return m_impl; }
+    std::string ToStdString(const wxMBConv& WXUNUSED(conv)) const
+    {
+        // No conversions are done when not using Unicode as everything is
+        // supposed to be in 7 bit ASCII anyhow, this method is provided just
+        // for compatibility with the Unicode build.
+        return ToStdString();
+    }
   #else
     // wxStringImpl is either not std::string or needs conversion
     #define wxStringToStdStringRetType std::string
-    std::string ToStdString() const
+    std::string ToStdString(const wxMBConv& conv = wxConvLibc) const
     {
-        wxScopedCharBuffer buf(mb_str());
+        wxScopedCharBuffer buf(mb_str(conv));
         return std::string(buf.data(), buf.length());
     }
   #endif
@@ -1611,6 +1618,24 @@ public:
         return FromImpl(wxStringImpl(utf8, len));
     }
 
+#if wxUSE_STD_STRING
+    static wxString FromUTF8Unchecked(const std::string& utf8)
+    {
+        wxASSERT( wxStringOperations::IsValidUtf8String(utf8.c_str(), utf8.length()) );
+        /*
+          Note that, under wxUSE_UNICODE_UTF8 and wxUSE_STD_STRING, wxStringImpl can be
+          initialized with a std::string whether wxUSE_STL_BASED_WXSTRING is 1 or not.
+        */
+        return FromImpl(utf8);
+    }
+    static wxString FromUTF8(const std::string& utf8)
+    {
+        if ( utf8.empty() || !wxStringOperations::IsValidUtf8String(utf8.c_str(), utf8.length()) )
+            return wxString();
+        return FromImpl(utf8);
+    }
+#endif
+
     const wxScopedCharBuffer utf8_str() const
         { return wxCharBuffer::CreateNonOwned(m_impl.c_str(), m_impl.length()); }
 
@@ -1627,6 +1652,12 @@ public:
                       "string must be valid UTF-8" );
         return s;
     }
+#if wxUSE_STD_STRING
+    static wxString FromUTF8(const std::string& utf8)
+      { return FromUTF8(utf8.c_str(), utf8.length()); }
+    static wxString FromUTF8Unchecked(const std::string& utf8)
+      { return FromUTF8Unchecked(utf8.c_str(), utf8.length()); }
+#endif
     const wxScopedCharBuffer utf8_str() const { return mb_str(wxMBConvUTF8()); }
 #else // ANSI
     static wxString FromUTF8(const char *utf8)
@@ -1654,6 +1685,12 @@ public:
 
         return wxString(buf.data(), wlen);
     }
+#if wxUSE_STD_STRING
+    static wxString FromUTF8(const std::string& utf8)
+      { return FromUTF8(utf8.c_str(), utf8.length()); }
+    static wxString FromUTF8Unchecked(const std::string& utf8)
+      { return FromUTF8Unchecked(utf8.c_str(), utf8.length()); }
+#endif
     const wxScopedCharBuffer utf8_str() const
       { return wxMBConvUTF8().cWC2MB(wc_str()); }
 #endif
@@ -3946,6 +3983,29 @@ namespace std
 } // namespace std
 
 #endif // wxUSE_STD_STRING
+
+#endif // C++11
+
+// Specialize std::iter_swap in C++11 to make std::reverse() work with wxString
+// iterators: unlike in C++98, where iter_swap() is required to deal with the
+// iterator::reference being different from "iterator::value_type&", in C++11
+// iter_swap() just calls swap() by default and this doesn't work for us as
+// wxUniCharRef is not the same as "wxUniChar&".
+#if __cplusplus >= 201103L
+
+namespace std
+{
+    template <>
+    inline void
+    iter_swap<wxString::iterator>(wxString::iterator i1, wxString::iterator i2)
+    {
+        // We don't check for i1 == i2, this won't happen in normal use, so
+        // don't pessimize the common code to account for it.
+        wxUniChar tmp = *i1;
+        *i1 = *i2;
+        *i2 = tmp;
+    }
+} // namespace std
 
 #endif // C++11
 

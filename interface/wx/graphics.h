@@ -31,6 +31,15 @@ public:
         The angles are measured in radians but, contrary to the usual
         mathematical convention, are always @e clockwise from the horizontal
         axis.
+
+        If for clockwise arc @a endAngle is less than @a startAngle it will be
+        progressively increased by 2*pi until it is greater than @a startAngle.
+        If for counter-clockwise arc @a endAngle is greater than @a startAngle
+        it will be progressively decreased by 2*pi until it is less than
+        @a startAngle.
+
+        If there is a current point set, an initial line segment will be added
+        to the path to connect the current point to the beginning of the arc.
     */
     //@{
     virtual void AddArc(wxDouble x, wxDouble y, wxDouble r,
@@ -51,12 +60,16 @@ public:
     /**
         Appends a circle around (@a x,@a y) with radius @a r as a new closed
         subpath.
+        After this call the current point will be at (@a x+@a r, @a y).
     */
     virtual void AddCircle(wxDouble x, wxDouble y, wxDouble r);
 
     /**
         Adds a cubic bezier curve from the current point, using two control
         points and an end point.
+        If there is no current point before the call to AddCurveToPoint() this
+        function will behave as if preceded by a call to
+        MoveToPoint(@a cx1, @a cy1).
     */
     virtual void AddCurveToPoint(wxDouble cx1, wxDouble cy1,
                                  wxDouble cx2, wxDouble cy2,
@@ -64,50 +77,69 @@ public:
     /**
         Adds a cubic bezier curve from the current point, using two control
         points and an end point.
+        If there is no current point before the call to AddCurveToPoint() this
+        function will behave as if preceded by a call to MoveToPoint(@a c1).
     */
     void AddCurveToPoint(const wxPoint2DDouble& c1,
                          const wxPoint2DDouble& c2,
                          const wxPoint2DDouble& e);
 
     /**
-        Appends an ellipse fitting into the passed in rectangle.
+        Appends an ellipse fitting into the passed in rectangle as a new
+        closed subpath.
+        After this call the current point will be at (@a x+@a w, @a y+@a h/2).
     */
     virtual void AddEllipse(wxDouble x, wxDouble y, wxDouble w, wxDouble h);
 
     /**
         Adds a straight line from the current point to (@a x,@a y).
+        If current point is not yet set before the call to AddLineToPoint()
+        this function will behave as MoveToPoint().
     */
     virtual void AddLineToPoint(wxDouble x, wxDouble y);
     /**
         Adds a straight line from the current point to @a p.
+        If current point is not yet set before the call to AddLineToPoint()
+        this function will behave as MoveToPoint().
     */
     void AddLineToPoint(const wxPoint2DDouble& p);
 
     /**
-        Adds another path.
+        Adds another path onto the current path. After this call the current
+        point will be at the added path's current point.
+        For Direct2D the path being appended shouldn't contain
+        a started non-empty subpath when this function is called.
     */
     virtual void AddPath(const wxGraphicsPath& path);
 
     /**
         Adds a quadratic bezier curve from the current point, using a control
         point and an end point.
+        If there is no current point before the call to AddQuadCurveToPoint()
+        this function will behave as if preceded by a call to
+        MoveToPoint(@a cx, @a cy).
     */
     virtual void AddQuadCurveToPoint(wxDouble cx, wxDouble cy,
                                      wxDouble x, wxDouble y);
 
     /**
-        Appends a rectangle as a new closed subpath.
+        Appends a rectangle as a new closed subpath. After this call
+        the current point will be at (@a x, @a y).
     */
     virtual void AddRectangle(wxDouble x, wxDouble y, wxDouble w, wxDouble h);
 
     /**
         Appends a rounded rectangle as a new closed subpath.
+        If @a radius equals 0 this function will behave as AddRectangle(),
+        otherwise after this call the current point will be at
+        (@a x+@a w, @a y+@a h/2).
     */
     virtual void AddRoundedRectangle(wxDouble x, wxDouble y, wxDouble w,
                                      wxDouble h, wxDouble radius);
 
     /**
-        Closes the current sub-path.
+        Closes the current sub-path. After this call the current point will be
+        at the joined endpoint of the sub-path.
     */
     virtual void CloseSubpath();
 
@@ -160,6 +192,8 @@ public:
 
     /**
         Transforms each point of this path by the matrix.
+        For Direct2D the current path shouldn't contain
+        a started non-empty subpath when this function is called.
     */
     virtual void Transform(const wxGraphicsMatrix& matrix);
 
@@ -343,6 +377,13 @@ public:
     }
     @endcode
 
+    @remarks For some renderers (like Direct2D or Cairo) processing
+    of drawing operations may be deferred (Direct2D render target normally
+    builds up a batch of rendering commands but defers processing of these
+    commands, Cairo operates on a separate surface) so to make drawing
+    results visible you need to update the content of the context
+    by calling wxGraphicsContext::Flush() or by destroying the context.
+
     @library{wxcore}
     @category{gdi,dc}
 
@@ -410,12 +451,24 @@ public:
     static wxGraphicsContext* Create();
 
     /**
-        Clips drawings to the specified region.
+        Sets the clipping region to the intersection of the given region
+        and the previously set clipping region.
+        The clipping region is an area to which drawing is restricted.
+
+        @remarks
+        - Calling this function can only make the clipping region smaller,
+        never larger.
+
+        - You need to call ResetClip() first if you want to set the clipping
+        region exactly to the region specified.
+
+        - If resulting clipping region is empty, then all drawing upon the context
+        is clipped out (all changes made by drawing operations are masked out).
     */
     virtual void Clip(const wxRegion& region) = 0;
 
     /**
-        Clips drawings to the specified rectangle.
+        @overload
     */
     virtual void Clip(wxDouble x, wxDouble y, wxDouble w, wxDouble h) = 0;
 
@@ -446,9 +499,6 @@ public:
 
     /**
         Extracts a sub-bitmap from an existing bitmap.
-
-        Currently this function is implemented in the native MSW and OS X
-        versions but not when using Cairo.
      */
     virtual wxGraphicsBitmap CreateSubBitmap(const wxGraphicsBitmap& bitmap,
                                              wxDouble x, wxDouble y,
@@ -1010,7 +1060,7 @@ public:
     used. There may be multiple instances on a system, if there are different
     rendering engines present, but there is always only one instance per
     engine. This instance is pointed back to by all objects created by it
-    (wxGraphicsContext, wxGraphicsPath etc) and can be retrieved through their
+    (wxGraphicsContext, wxGraphicsPath etc.) and can be retrieved through their
     wxGraphicsObject::GetRenderer() method. Therefore you can create an
     additional instance of a path etc. by calling
     wxGraphicsObject::GetRenderer() and then using the appropriate CreateXXX()
@@ -1081,7 +1131,8 @@ public:
     virtual wxGraphicsContext* CreateContext(const wxMemoryDC& memoryDC) = 0 ;
 
     /**
-        Creates a wxGraphicsContext from a wxPrinterDC
+        Creates a wxGraphicsContext from a wxPrinterDC.
+        @remarks Not implemented for Direct2D renderer (on MSW).
     */
     virtual wxGraphicsContext* CreateContext(const wxPrinterDC& printerDC) = 0 ;
 
@@ -1089,7 +1140,7 @@ public:
         Creates a wxGraphicsContext from a wxEnhMetaFileDC.
 
         This function, as wxEnhMetaFileDC class itself, is only available only
-        under MSW.
+        under MSW (but not for Direct2D renderer).
     */
     virtual wxGraphicsContext* CreateContext(const wxEnhMetaFileDC& metaFileDC) = 0;
 
@@ -1111,7 +1162,9 @@ public:
     /**
         Creates a wxGraphicsContext from a native context. This native context
         must be a CGContextRef for Core Graphics, a Graphics pointer for
-        GDIPlus, or a cairo_t pointer for cairo.
+        GDIPlus, an ID2D1RenderTarget pointer for Direct2D, a cairo_t pointer
+        or HDC for Cairo on MSW, or a cairo_t pointer for Cairo on any other
+        platform.
     */
     virtual wxGraphicsContext* CreateContextFromNativeContext(void* context) = 0;
 
@@ -1206,9 +1259,6 @@ public:
 
     /**
         Extracts a sub-bitmap from an existing bitmap.
-
-        Currently this function is implemented in the native MSW and OS X
-        versions but not when using Cairo.
      */
     virtual wxGraphicsBitmap CreateSubBitmap(const wxGraphicsBitmap& bitmap,
                                              wxDouble x, wxDouble y,
@@ -1217,11 +1267,12 @@ public:
     /**
         Returns the name of the technology used by the renderer.
 
-        Currently this function returns "gdiplus" for Windows GDI+ implementation,
+        Currently this function returns "gdiplus" for Windows GDI+
+        implementation, "direct2d" for Windows Direct2D implementation,
         "cairo" for Cairo implementation and "cg" for OS X CoreGraphics
         implementation.
 
-        Note: the string returned by this method is not user-readable and is
+        @remarks The string returned by this method is not user-readable and is
         expected to be used internally by the program only.
 
         @since 3.1.0
@@ -1245,11 +1296,21 @@ public:
     /**
         Returns the default renderer on this platform. On OS X this is the Core
         Graphics (a.k.a. Quartz 2D) renderer, on MSW the GDIPlus renderer, and
-        on GTK we currently default to the cairo renderer.
+        on GTK we currently default to the Cairo renderer.
     */
     static wxGraphicsRenderer* GetDefaultRenderer();
+    /**
+        Returns Cairo renderer.
+    */
     static wxGraphicsRenderer* GetCairoRenderer();
-
+    /**
+        Returns GDI+ renderer (MSW only).
+    */
+    static wxGraphicsRenderer* GetGDIPlusRenderer();
+    /**
+        Returns Direct2D renderer (MSW only).
+    */
+    static wxGraphicsRenderer* GetDirect2DRenderer();
 };
 
 

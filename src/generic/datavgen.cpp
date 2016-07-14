@@ -41,6 +41,7 @@
 #include "wx/renderer.h"
 #include "wx/dcbuffer.h"
 #include "wx/icon.h"
+#include "wx/itemattr.h"
 #include "wx/list.h"
 #include "wx/listimpl.cpp"
 #include "wx/imaglist.h"
@@ -49,6 +50,7 @@
 #include "wx/selstore.h"
 #include "wx/stopwatch.h"
 #include "wx/weakref.h"
+#include "wx/generic/private/markuptext.h"
 #include "wx/generic/private/widthcalc.h"
 
 //-----------------------------------------------------------------------------
@@ -120,8 +122,8 @@ wxDataViewColumn* GetExpanderColumnOrFirstOne(wxDataViewCtrl* dataview)
 wxTextCtrl *CreateEditorTextCtrl(wxWindow *parent, const wxRect& labelRect, const wxString& value)
 {
     wxTextCtrl* ctrl = new wxTextCtrl(parent, wxID_ANY, value,
-                                      wxPoint(labelRect.x,labelRect.y),
-                                      wxSize(labelRect.width,labelRect.height),
+                                      labelRect.GetPosition(),
+                                      labelRect.GetSize(),
                                       wxTE_PROCESS_ENTER);
 
     // Adjust size of wxTextCtrl editor to fit text, even if it means being
@@ -183,6 +185,15 @@ void wxDataViewColumn::UpdateDisplay()
     {
         int idx = m_owner->GetColumnIndex( this );
         m_owner->OnColumnChange( idx );
+    }
+}
+
+void wxDataViewColumn::UpdateWidth()
+{
+    if (m_owner)
+    {
+        int idx = m_owner->GetColumnIndex( this );
+        m_owner->OnColumnWidthChange( idx );
     }
 }
 
@@ -284,12 +295,7 @@ private:
     bool SendEvent(wxEventType type, unsigned int n)
     {
         wxDataViewCtrl * const owner = GetOwner();
-        wxDataViewEvent event(type, owner->GetId());
-
-        event.SetEventObject(owner);
-        event.SetColumn(n);
-        event.SetDataViewColumn(owner->GetColumn(n));
-        event.SetModel(owner->GetModel());
+        wxDataViewEvent event(type, owner, owner->GetColumn(n));
 
         // for events created by wxDataViewHeaderWindow the
         // row / value fields are not valid
@@ -741,7 +747,18 @@ public:
     const wxSelectionStore& GetSelections() const { return m_selection; }
     void ClearSelection() { m_selection.SelectRange(0, GetRowCount() - 1, false); }
     void Select( const wxArrayInt& aSelections );
-    void SelectAllRows( bool on );
+
+    void SelectAllRows()
+    {
+        m_selection.SelectRange(0, GetRowCount() - 1);
+        Refresh();
+    }
+
+    // If a valid row is specified and it was previously selected, it is left
+    // selected and the function returns false. Otherwise, i.e. if there is
+    // really no selection left in the control, it returns true.
+    bool UnselectAllRows(unsigned int except = (unsigned int)-1);
+
     void SelectRow( unsigned int row, bool on );
     void SelectRows( unsigned int from, unsigned int to );
     void ReverseRowSelection( unsigned int row );
@@ -988,11 +1005,47 @@ wxDataViewTextRenderer::wxDataViewTextRenderer( const wxString &varianttype,
                                                 wxDataViewCellMode mode, int align ) :
     wxDataViewRenderer( varianttype, mode, align )
 {
+#if wxUSE_MARKUP
+    m_markupText = NULL;
+#endif // wxUSE_MARKUP
 }
+
+wxDataViewTextRenderer::~wxDataViewTextRenderer()
+{
+#if wxUSE_MARKUP
+    delete m_markupText;
+#endif // wxUSE_MARKUP
+}
+
+#if wxUSE_MARKUP
+void wxDataViewTextRenderer::EnableMarkup(bool enable)
+{
+    if ( enable )
+    {
+        if ( !m_markupText )
+        {
+            m_markupText = new wxMarkupText(wxString());
+        }
+    }
+    else
+    {
+        if ( m_markupText )
+        {
+            delete m_markupText;
+            m_markupText = NULL;
+        }
+    }
+}
+#endif // wxUSE_MARKUP
 
 bool wxDataViewTextRenderer::SetValue( const wxVariant &value )
 {
     m_text = value.GetString();
+
+#if wxUSE_MARKUP
+    if ( m_markupText )
+        m_markupText->SetMarkupText(m_text);
+#endif // wxUSE_MARKUP
 
     return true;
 }
@@ -1022,14 +1075,39 @@ bool wxDataViewTextRenderer::GetValueFromEditorCtrl( wxWindow *editor, wxVariant
 
 bool wxDataViewTextRenderer::Render(wxRect rect, wxDC *dc, int state)
 {
-    RenderText(m_text, 0, rect, dc, state);
+#if wxUSE_MARKUP
+    if ( m_markupText )
+    {
+        int flags = 0;
+        if ( state & wxDATAVIEW_CELL_SELECTED )
+            flags |= wxCONTROL_SELECTED;
+        m_markupText->RenderItemText(GetView(), *dc, rect, flags);
+    }
+    else
+#endif // wxUSE_MARKUP
+        RenderText(m_text, 0, rect, dc, state);
+
     return true;
 }
 
 wxSize wxDataViewTextRenderer::GetSize() const
 {
     if (!m_text.empty())
+    {
+#if wxUSE_MARKUP
+        if ( m_markupText )
+        {
+            wxDataViewCtrl* const view = GetView();
+            wxClientDC dc(view);
+            if ( GetAttr().HasFont() )
+                dc.SetFont(GetAttr().GetEffectiveFont(view->GetFont()));
+
+            return m_markupText->Measure(dc);
+        }
+#endif // wxUSE_MARKUP
+
         return GetTextExtent(m_text);
+    }
     else
         return wxSize(wxDVC_DEFAULT_RENDERER_SIZE,wxDVC_DEFAULT_RENDERER_SIZE);
 }
@@ -1638,12 +1716,7 @@ wxDragResult wxDataViewMainWindow::OnDragOver( wxDataFormat format, wxCoord x,
     if ( row < GetRowCount() && xx <= GetEndOfLastCol() )
         item = GetItemByRow( row );
 
-    wxDataViewModel *model = GetModel();
-
-    wxDataViewEvent event( wxEVT_DATAVIEW_ITEM_DROP_POSSIBLE, m_owner->GetId() );
-    event.SetEventObject( m_owner );
-    event.SetItem( item );
-    event.SetModel( model );
+    wxDataViewEvent event(wxEVT_DATAVIEW_ITEM_DROP_POSSIBLE, m_owner, item);
     event.SetDataFormat( format );
     event.SetDropEffect( def );
     if ( !m_owner->HandleWindowEvent( event ) || !event.IsAllowed() )
@@ -1682,12 +1755,7 @@ bool wxDataViewMainWindow::OnDrop( wxDataFormat format, wxCoord x, wxCoord y )
     if ( row < GetRowCount() && xx <= GetEndOfLastCol())
        item = GetItemByRow( row );
 
-    wxDataViewModel *model = GetModel();
-
-    wxDataViewEvent event( wxEVT_DATAVIEW_ITEM_DROP_POSSIBLE, m_owner->GetId() );
-    event.SetEventObject( m_owner );
-    event.SetItem( item );
-    event.SetModel( model );
+    wxDataViewEvent event(wxEVT_DATAVIEW_ITEM_DROP_POSSIBLE, m_owner, item);
     event.SetDataFormat( format );
     if (!m_owner->HandleWindowEvent( event ) || !event.IsAllowed())
         return false;
@@ -1708,14 +1776,9 @@ wxDragResult wxDataViewMainWindow::OnData( wxDataFormat format, wxCoord x, wxCoo
     if ( row < GetRowCount() && xx <= GetEndOfLastCol() )
         item = GetItemByRow( row );
 
-    wxDataViewModel *model = GetModel();
-
     wxCustomDataObject *obj = (wxCustomDataObject *) GetDropTarget()->GetDataObject();
 
-    wxDataViewEvent event( wxEVT_DATAVIEW_ITEM_DROP, m_owner->GetId() );
-    event.SetEventObject( m_owner );
-    event.SetItem( item );
-    event.SetModel( model );
+    wxDataViewEvent event(wxEVT_DATAVIEW_ITEM_DROP, m_owner, item);
     event.SetDataFormat( format );
     event.SetDataSize( obj->GetSize() );
     event.SetDataBuffer( obj->GetData() );
@@ -1831,11 +1894,9 @@ void wxDataViewMainWindow::OnPaint( wxPaintEvent &WXUNUSED(event) )
     unsigned int item_last = item_start + item_count;
 
     // Send the event to wxDataViewCtrl itself.
-    wxWindow * const parent = GetParent();
-    wxDataViewEvent cache_event(wxEVT_DATAVIEW_CACHE_HINT, parent->GetId());
-    cache_event.SetEventObject(parent);
+    wxDataViewEvent cache_event(wxEVT_DATAVIEW_CACHE_HINT, m_owner, NULL);
     cache_event.SetCache(item_start, item_last - 1);
-    parent->ProcessWindowEvent(cache_event);
+    m_owner->ProcessWindowEvent(cache_event);
 
     // compute which columns needs to be redrawn
     unsigned int cols = GetOwner()->GetColumnCount();
@@ -2240,6 +2301,8 @@ wxDataViewMainWindow::StartEditing(const wxDataViewItem& item,
     const wxRect itemRect = GetItemRect(item, col);
     if ( renderer->StartEditing(item, itemRect) )
     {
+        renderer->NotifyEditingStarted(item);
+
         // Save the renderer to be able to finish/cancel editing it later and
         // save the control to be able to detect if we're still editing it.
         m_editorRenderer = renderer;
@@ -2515,12 +2578,8 @@ bool wxDataViewMainWindow::ItemChanged(const wxDataViewItem & item)
     GetOwner()->InvalidateColBestWidths();
 
     // Send event
-    wxWindow *parent = GetParent();
-    wxDataViewEvent le(wxEVT_DATAVIEW_ITEM_VALUE_CHANGED, parent->GetId());
-    le.SetEventObject(parent);
-    le.SetModel(GetModel());
-    le.SetItem(item);
-    parent->ProcessWindowEvent(le);
+    wxDataViewEvent le(wxEVT_DATAVIEW_ITEM_VALUE_CHANGED, m_owner, item);
+    m_owner->ProcessWindowEvent(le);
 
     return true;
 }
@@ -2546,14 +2605,9 @@ bool wxDataViewMainWindow::ValueChanged( const wxDataViewItem & item, unsigned i
     GetOwner()->InvalidateColBestWidth(view_column);
 
     // Send event
-    wxWindow *parent = GetParent();
-    wxDataViewEvent le(wxEVT_DATAVIEW_ITEM_VALUE_CHANGED, parent->GetId());
-    le.SetEventObject(parent);
-    le.SetModel(GetModel());
-    le.SetItem(item);
-    le.SetColumn(view_column);
-    le.SetDataViewColumn(GetOwner()->GetColumn(view_column));
-    parent->ProcessWindowEvent(le);
+    wxDataViewColumn* const column = m_owner->GetColumn(view_column);
+    wxDataViewEvent le(wxEVT_DATAVIEW_ITEM_VALUE_CHANGED, m_owner, column, item);
+    m_owner->ProcessWindowEvent(le);
 
     return true;
 }
@@ -2726,25 +2780,36 @@ void wxDataViewMainWindow::ChangeCurrentRow( unsigned int row )
     // send event
 }
 
-void wxDataViewMainWindow::SelectAllRows( bool on )
+bool wxDataViewMainWindow::UnselectAllRows(unsigned int except)
 {
-    if (IsEmpty())
-        return;
-
-    if (on)
-    {
-        m_selection.SelectRange(0, GetRowCount() - 1);
-        Refresh();
-    }
-    else if (!m_selection.IsEmpty())
+    if (!m_selection.IsEmpty())
     {
         for (unsigned i = GetFirstVisibleRow(); i <= GetLastVisibleRow(); i++)
         {
-            if (m_selection.IsSelected(i))
+            if (m_selection.IsSelected(i) && i != except)
                 RefreshRow(i);
         }
-        ClearSelection();
+
+        if (except != (unsigned int)-1)
+        {
+            const bool wasSelected = m_selection.IsSelected(except);
+            ClearSelection();
+            if (wasSelected)
+            {
+                m_selection.SelectItem(except);
+
+                // The special item is still selected.
+                return false;
+            }
+        }
+        else
+        {
+            ClearSelection();
+        }
     }
+
+    // There are no selected items left.
+    return true;
 }
 
 void wxDataViewMainWindow::SelectRow( unsigned int row, bool on )
@@ -2791,14 +2856,8 @@ bool wxDataViewMainWindow::IsRowSelected( unsigned int row )
 
 void wxDataViewMainWindow::SendSelectionChangedEvent( const wxDataViewItem& item)
 {
-    wxWindow *parent = GetParent();
-    wxDataViewEvent le(wxEVT_DATAVIEW_SELECTION_CHANGED, parent->GetId());
-
-    le.SetEventObject(parent);
-    le.SetModel(GetModel());
-    le.SetItem( item );
-
-    parent->ProcessWindowEvent(le);
+    wxDataViewEvent le(wxEVT_DATAVIEW_SELECTION_CHANGED, m_owner, item);
+    m_owner->ProcessWindowEvent(le);
 }
 
 void wxDataViewMainWindow::RefreshRow( unsigned int row )
@@ -3089,14 +3148,8 @@ bool
 wxDataViewMainWindow::SendExpanderEvent(wxEventType type,
                                         const wxDataViewItem& item)
 {
-    wxWindow *parent = GetParent();
-    wxDataViewEvent le(type, parent->GetId());
-
-    le.SetEventObject(parent);
-    le.SetModel(GetModel());
-    le.SetItem( item );
-
-    return !parent->ProcessWindowEvent(le) || le.IsAllowed();
+    wxDataViewEvent le(type, m_owner, item);
+    return !m_owner->ProcessWindowEvent(le) || le.IsAllowed();
 }
 
 bool wxDataViewMainWindow::IsExpanded( unsigned int row ) const
@@ -3610,7 +3663,17 @@ void wxDataViewMainWindow::OnCharHook(wxKeyEvent& event)
                 return;
 
             case WXK_RETURN:
+                // Shift-Enter is not special neither.
+                if ( event.ShiftDown() )
+                    break;
+                wxFALLTHROUGH;
+
             case WXK_TAB:
+                // Ctrl/Alt-Tab or Enter could be used for something else, so
+                // don't handle them here.
+                if ( event.HasModifiers() )
+                    break;
+
                 m_editorRenderer->FinishEditing();
                 return;
         }
@@ -3666,13 +3729,8 @@ void wxDataViewMainWindow::OnChar( wxKeyEvent &event )
 
                 const wxDataViewItem item = GetItemByRow(m_currentRow);
 
-                wxDataViewEvent le(wxEVT_DATAVIEW_ITEM_ACTIVATED,
-                                   parent->GetId());
-                le.SetItem(item);
-                le.SetEventObject(parent);
-                le.SetModel(GetModel());
-
-                if ( parent->ProcessWindowEvent(le) )
+                wxDataViewEvent le(wxEVT_DATAVIEW_ITEM_ACTIVATED, m_owner, item);
+                if ( m_owner->ProcessWindowEvent(le) )
                     break;
                 // else: fall through to WXK_SPACE handling
             }
@@ -3806,6 +3864,9 @@ void wxDataViewMainWindow::OnVerticalNavigation(const wxKeyEvent& event, int del
     unsigned int oldCurrent = m_currentRow;
     unsigned int newCurrent = (unsigned int)newRow;
 
+    if ( newCurrent == oldCurrent )
+        return;
+
     // in single selection we just ignore Shift as we can't select several
     // items anyhow
     if ( event.ShiftDown() && !IsSingleSel() )
@@ -3822,13 +3883,11 @@ void wxDataViewMainWindow::OnVerticalNavigation(const wxKeyEvent& event, int del
         }
 
         SelectRows(oldCurrent, newCurrent);
-        if (oldCurrent!=newCurrent)
-        {
-            wxSelectionStore::IterationState cookie;
-            const unsigned firstSel = m_selection.GetFirstSelectedItem(cookie);
-            if ( firstSel != wxSelectionStore::NO_SELECTION )
-                SendSelectionChangedEvent(GetItemByRow(firstSel));
-        }
+
+        wxSelectionStore::IterationState cookie;
+        const unsigned firstSel = m_selection.GetFirstSelectedItem(cookie);
+        if ( firstSel != wxSelectionStore::NO_SELECTION )
+            SendSelectionChangedEvent(GetItemByRow(firstSel));
     }
     else // !shift
     {
@@ -3836,7 +3895,7 @@ void wxDataViewMainWindow::OnVerticalNavigation(const wxKeyEvent& event, int del
 
         // all previously selected items are unselected unless ctrl is held
         if ( !event.ControlDown() )
-            SelectAllRows(false);
+            UnselectAllRows();
 
         ChangeCurrentRow( newCurrent );
 
@@ -3849,7 +3908,7 @@ void wxDataViewMainWindow::OnVerticalNavigation(const wxKeyEvent& event, int del
             RefreshRow( m_currentRow );
     }
 
-    GetOwner()->EnsureVisible( m_currentRow, -1 );
+    GetOwner()->EnsureVisibleRowCol( m_currentRow, -1 );
 }
 
 void wxDataViewMainWindow::OnLeftKey(wxKeyEvent& event)
@@ -3897,7 +3956,7 @@ void wxDataViewMainWindow::OnLeftKey(wxKeyEvent& event)
                     SelectRow( row, false);
                     SelectRow( parent, true );
                     ChangeCurrentRow( parent );
-                    GetOwner()->EnsureVisible( parent, -1 );
+                    GetOwner()->EnsureVisibleRowCol( parent, -1 );
                     SendSelectionChangedEvent( parent_node->GetItem() );
                 }
             }
@@ -3930,7 +3989,7 @@ void wxDataViewMainWindow::OnRightKey(wxKeyEvent& event)
                 SelectRow( row, false );
                 SelectRow( row + 1, true );
                 ChangeCurrentRow( row + 1 );
-                GetOwner()->EnsureVisible( row + 1, -1 );
+                GetOwner()->EnsureVisibleRowCol( row + 1, -1 );
                 SendSelectionChangedEvent( GetItemByRow(row+1) );
             }
         }
@@ -3962,7 +4021,7 @@ bool wxDataViewMainWindow::TryAdvanceCurrentColumn(wxDataViewTreeNode *node, wxK
     {
         if ( forward )
         {
-            m_currentCol = GetOwner()->GetColumnAt(1);
+            m_currentCol = GetOwner()->GetColumnAt(0);
             m_currentColSetByKeyboard = true;
             RefreshRow(m_currentRow);
             return true;
@@ -4011,7 +4070,7 @@ bool wxDataViewMainWindow::TryAdvanceCurrentColumn(wxDataViewTreeNode *node, wxK
         }
     }
 
-    GetOwner()->EnsureVisible(m_currentRow, idx);
+    GetOwner()->EnsureVisibleRowCol(m_currentRow, idx);
 
     if ( idx < 1 )
     {
@@ -4077,19 +4136,8 @@ void wxDataViewMainWindow::OnMouse( wxMouseEvent &event )
     // the other ones.
     if (event.RightUp())
     {
-        wxWindow *parent = GetParent();
-        wxDataViewEvent le(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, parent->GetId());
-        le.SetEventObject(parent);
-        le.SetModel(model);
-
-        if ( item.IsOk() && col )
-        {
-            le.SetItem( item );
-            le.SetColumn( col->GetModelColumn() );
-            le.SetDataViewColumn( col );
-        }
-
-        parent->ProcessWindowEvent(le);
+        wxDataViewEvent le(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, m_owner, col, item);
+        m_owner->ProcessWindowEvent(le);
         return;
     }
 
@@ -4118,10 +4166,7 @@ void wxDataViewMainWindow::OnMouse( wxMouseEvent &event )
             wxDataViewItem itemDragged = GetItemByRow( drag_item_row );
 
             // Notify cell about drag
-            wxDataViewEvent evt( wxEVT_DATAVIEW_ITEM_BEGIN_DRAG, m_owner->GetId() );
-            evt.SetEventObject( m_owner );
-            evt.SetItem( itemDragged );
-            evt.SetModel( model );
+            wxDataViewEvent evt(wxEVT_DATAVIEW_ITEM_BEGIN_DRAG, m_owner, itemDragged);
             if (!m_owner->HandleWindowEvent( evt ))
                 return;
 
@@ -4233,30 +4278,22 @@ void wxDataViewMainWindow::OnMouse( wxMouseEvent &event )
 
     if (event.LeftDClick())
     {
-        if(hoverOverExpander)
+        if ( !hoverOverExpander && (current == m_lineLastClicked) )
         {
-            // a double click on the expander will be converted into a "simulated" normal click
-            simulateClick = true;
+            wxDataViewEvent le(wxEVT_DATAVIEW_ITEM_ACTIVATED, m_owner, col, item);
+            if ( m_owner->ProcessWindowEvent(le) )
+            {
+                // Item activation was handled from the user code.
+                return;
+            }
         }
-        else if ( current == m_lineLastClicked )
-        {
-            wxWindow *parent = GetParent();
-            wxDataViewEvent le(wxEVT_DATAVIEW_ITEM_ACTIVATED, parent->GetId());
-            le.SetItem( item );
-            le.SetColumn( col->GetModelColumn() );
-            le.SetDataViewColumn( col );
-            le.SetEventObject(parent);
-            le.SetModel(GetModel());
 
-            parent->ProcessWindowEvent(le);
-            return;
-        }
-        else
-        {
-            // The first click was on another item, so don't interpret this as
-            // a double click, but as a simple click instead
-            simulateClick = true;
-        }
+        // Either it was a double click over the expander, or the second click
+        // happened on another item than the first one or it was a bona fide
+        // double click which was unhandled. In all these cases we continue
+        // processing this event as a simple click, e.g. to select the item or
+        // activate the renderer.
+        simulateClick = true;
     }
 
     if (event.LeftUp() && !hoverOverExpander)
@@ -4264,9 +4301,12 @@ void wxDataViewMainWindow::OnMouse( wxMouseEvent &event )
         if (m_lineSelectSingleOnUp != (unsigned int)-1)
         {
             // select single line
-            SelectAllRows( false );
-            SelectRow( m_lineSelectSingleOnUp, true );
-            SendSelectionChangedEvent( GetItemByRow(m_lineSelectSingleOnUp) );
+            if ( UnselectAllRows(m_lineSelectSingleOnUp) )
+            {
+                SelectRow( m_lineSelectSingleOnUp, true );
+                SendSelectionChangedEvent( GetItemByRow(m_lineSelectSingleOnUp) );
+            }
+            //else: it was already selected, nothing to do
         }
 
         // If the user click the expander, we do not do editing even if the column
@@ -4301,7 +4341,8 @@ void wxDataViewMainWindow::OnMouse( wxMouseEvent &event )
         // Multi-selections should not be cleared if a selected item is clicked.
         if (!IsRowSelected(current))
         {
-            SelectAllRows(false);
+            UnselectAllRows();
+
             const unsigned oldCurrent = m_currentRow;
             ChangeCurrentRow(current);
             SelectRow(m_currentRow,true);
@@ -4338,10 +4379,12 @@ void wxDataViewMainWindow::OnMouse( wxMouseEvent &event )
         {
             if ( IsSingleSel() || !IsRowSelected(current) )
             {
-                SelectAllRows( false );
                 ChangeCurrentRow(current);
-                SelectRow(m_currentRow,true);
-                SendSelectionChangedEvent(GetItemByRow( m_currentRow ) );
+                if ( UnselectAllRows(current) )
+                {
+                    SelectRow(m_currentRow,true);
+                    SendSelectionChangedEvent(GetItemByRow( m_currentRow ) );
+                }
             }
             else // multi sel & current is highlighted & no mod keys
             {
@@ -4537,7 +4580,11 @@ void wxDataViewMainWindow::UpdateColumnSizes()
     if ( lastColX < fullWinWidth )
     {
         int desiredWidth = wxMax(fullWinWidth - lastColX, lastCol->GetMinWidth());
-        lastCol->SetWidth(desiredWidth);
+        if ( !lastCol->WXUpdateWidth(desiredWidth) )
+        {
+            // The column width didn't change, no need to do anything else.
+            return;
+        }
 
         // All columns fit on screen, so we don't need horizontal scrolling.
         // To prevent flickering scrollbar when resizing the window to be
@@ -4638,6 +4685,11 @@ bool wxDataViewCtrl::Create(wxWindow *parent,
 wxBorder wxDataViewCtrl::GetDefaultBorder() const
 {
     return wxBORDER_THEME;
+}
+
+wxHeaderCtrl* wxDataViewCtrl::GenericGetHeader() const
+{
+    return m_headerArea;
 }
 
 #ifdef __WXMSW__
@@ -4800,6 +4852,13 @@ bool wxDataViewCtrl::InsertColumn( unsigned int pos, wxDataViewColumn *col )
     m_colsBestWidths.insert(m_colsBestWidths.begin() + pos, CachedColWidthInfo());
     OnColumnsCountChanged();
     return true;
+}
+
+void wxDataViewCtrl::OnColumnWidthChange(unsigned int idx)
+{
+    InvalidateColBestWidth(idx);
+
+    OnColumnChange(idx);
 }
 
 void wxDataViewCtrl::OnColumnChange(unsigned int idx)
@@ -5185,7 +5244,7 @@ void wxDataViewCtrl::Select( const wxDataViewItem & item )
     {
         // Unselect all rows before select another in the single select mode
         if (m_clientArea->IsSingleSel())
-            m_clientArea->SelectAllRows(false);
+            m_clientArea->UnselectAllRows();
 
         m_clientArea->SelectRow(row, true);
 
@@ -5211,6 +5270,24 @@ bool wxDataViewCtrl::IsSelected( const wxDataViewItem & item ) const
     return false;
 }
 
+bool wxDataViewCtrl::SetHeaderAttr(const wxItemAttr& attr)
+{
+    if ( !m_headerArea )
+        return false;
+
+    // Call all functions unconditionally to reset the previously set
+    // attributes, if any.
+    m_headerArea->SetForegroundColour(attr.GetTextColour());
+    m_headerArea->SetBackgroundColour(attr.GetBackgroundColour());
+    m_headerArea->SetFont(attr.GetFont());
+
+    // If the font has changed, the size of the header might need to be
+    // updated.
+    Layout();
+
+    return true;
+}
+
 void wxDataViewCtrl::SetAlternateRowColour(const wxColour& colour)
 {
     m_alternateRowColour = colour;
@@ -5218,15 +5295,15 @@ void wxDataViewCtrl::SetAlternateRowColour(const wxColour& colour)
 
 void wxDataViewCtrl::SelectAll()
 {
-    m_clientArea->SelectAllRows(true);
+    m_clientArea->SelectAllRows();
 }
 
 void wxDataViewCtrl::UnselectAll()
 {
-    m_clientArea->SelectAllRows(false);
+    m_clientArea->UnselectAllRows();
 }
 
-void wxDataViewCtrl::EnsureVisible( int row, int column )
+void wxDataViewCtrl::EnsureVisibleRowCol( int row, int column )
 {
     if( row < 0 )
         row = 0;
@@ -5253,9 +5330,9 @@ void wxDataViewCtrl::EnsureVisible( const wxDataViewItem & item, const wxDataVie
     if( row >= 0 )
     {
         if( column == NULL )
-            EnsureVisible(row, -1);
+            EnsureVisibleRowCol(row, -1);
         else
-            EnsureVisible( row, GetColumnIndex(column) );
+            EnsureVisibleRowCol( row, GetColumnIndex(column) );
     }
 
 }
@@ -5282,10 +5359,8 @@ int wxDataViewCtrl::GetRowByItem( const wxDataViewItem & item ) const
     return m_clientArea->GetRowByItem( item );
 }
 
-void wxDataViewCtrl::Expand( const wxDataViewItem & item )
+void wxDataViewCtrl::DoExpand( const wxDataViewItem & item )
 {
-    ExpandAncestors( item );
-
     int row = m_clientArea->GetRowByItem( item );
     if (row != -1)
         m_clientArea->Expand(row);

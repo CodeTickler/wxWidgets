@@ -46,6 +46,7 @@
     #include "wx/msw/enhmeta.h"
 #endif
 #include "wx/dcgraph.h"
+#include "wx/rawbmp.h"
 
 #include "wx/msw/private.h" // needs to be before #include <commdlg.h>
 
@@ -154,15 +155,18 @@ public :
     //
 
     // appends a rectangle as a new closed subpath
-    virtual void AddRectangle( wxDouble x, wxDouble y, wxDouble w, wxDouble h ) ;
+    virtual void AddRectangle(wxDouble x, wxDouble y, wxDouble w, wxDouble h) wxOVERRIDE;
+
+    // appends a circle as a new closed subpath
+    virtual void AddCircle(wxDouble x, wxDouble y, wxDouble r) wxOVERRIDE;
+
+    // appends an ellipse as a new closed subpath fitting the passed rectangle
+    virtual void AddEllipse(wxDouble x, wxDouble y, wxDouble w, wxDouble h) wxOVERRIDE;
+
     /*
-
-    // appends an ellipsis as a new closed subpath fitting the passed rectangle
-    virtual void AddEllipsis( wxDouble x, wxDouble y, wxDouble w , wxDouble h ) ;
-
     // draws a an arc to two tangents connecting (current) to (x1,y1) and (x1,y1) to (x2,y2), also a straight line from (current) to (x1,y1)
     virtual void AddArcToPoint( wxDouble x1, wxDouble y1 , wxDouble x2, wxDouble y2, wxDouble r )  ;
-*/
+    */
 
     // returns the native path
     virtual void * GetNativePath() const { return m_path; }
@@ -180,6 +184,10 @@ public :
 
 private :
     GraphicsPath* m_path;
+    bool m_logCurrentPointSet;
+    PointF m_logCurrentPoint;
+    bool m_figureOpened;
+    PointF m_figureStart;
 };
 
 class wxGDIPlusMatrixData : public wxGraphicsMatrixData
@@ -961,6 +969,8 @@ wxGDIPlusFontData::wxGDIPlusFontData( wxGraphicsRenderer* renderer,
         style |= FontStyleItalic;
     if ( font.GetUnderlined() )
         style |= FontStyleUnderline;
+    if ( font.GetStrikethrough() )
+        style |= FontStyleStrikeout;
     if ( font.GetWeight() == wxFONTWEIGHT_BOLD )
         style |= FontStyleBold;
 
@@ -1158,6 +1168,10 @@ wxGDIPlusBitmapData::~wxGDIPlusBitmapData()
 //-----------------------------------------------------------------------------
 
 wxGDIPlusPathData::wxGDIPlusPathData(wxGraphicsRenderer* renderer, GraphicsPath* path ) : wxGraphicsPathData(renderer)
+    , m_logCurrentPointSet(false)
+    , m_logCurrentPoint(0.0, 0.0)
+    , m_figureOpened(false)
+    , m_figureStart(0.0, 0.0)
 {
     if ( path )
         m_path = path;
@@ -1172,7 +1186,14 @@ wxGDIPlusPathData::~wxGDIPlusPathData()
 
 wxGraphicsObjectRefData* wxGDIPlusPathData::Clone() const
 {
-    return new wxGDIPlusPathData( GetRenderer() , m_path->Clone());
+    wxGDIPlusPathData* newPathData =
+                     new wxGDIPlusPathData(GetRenderer(), m_path->Clone());
+    newPathData->m_logCurrentPointSet = m_logCurrentPointSet;
+    newPathData->m_logCurrentPoint = m_logCurrentPoint;
+    newPathData->m_figureOpened = m_figureOpened;
+    newPathData->m_figureStart = m_figureStart;
+
+    return newPathData;
 }
 
 //
@@ -1182,17 +1203,53 @@ wxGraphicsObjectRefData* wxGDIPlusPathData::Clone() const
 void wxGDIPlusPathData::MoveToPoint( wxDouble x , wxDouble y )
 {
     m_path->StartFigure();
-    m_path->AddLine((REAL) x,(REAL) y,(REAL) x,(REAL) y);
+    m_figureOpened = true;
+    m_figureStart = PointF((REAL)x, (REAL)y);
+    // Since native current point is not updated in any way
+    // we have to maintain current point location on our own in this case.
+    m_logCurrentPoint = m_figureStart;
+    m_logCurrentPointSet = true;
 }
 
 void wxGDIPlusPathData::AddLineToPoint( wxDouble x , wxDouble y )
 {
-    m_path->AddLine((REAL) x,(REAL) y,(REAL) x,(REAL) y);
+    PointF start;
+    if ( m_logCurrentPointSet )
+    {
+        start = m_logCurrentPoint;
+        // After calling AddLine() the native current point
+        // will be updated and can be used.
+        m_logCurrentPointSet = false;
+    }
+    else
+    {
+        Status st = m_path->GetLastPoint(&start);
+        // If current point is not yet set then
+        // this function should behave as MoveToPoint.
+        if ( st != Ok )
+        {
+            MoveToPoint(x, y);
+            return;
+        }
+    }
+    m_path->AddLine(start.X, start.Y, (REAL)x, (REAL)y);
 }
 
 void wxGDIPlusPathData::CloseSubpath()
 {
-    m_path->CloseFigure();
+    if( m_figureOpened )
+    {
+        // Ensure that sub-path being closed contains at least one point.
+        if ( m_logCurrentPointSet )
+            m_path->AddLine(m_logCurrentPoint, m_logCurrentPoint);
+
+        m_path->CloseFigure();
+        m_figureOpened = false;
+        // Since native GDI+ renderer doesn't move its current point
+        // to the starting point of the figure we need to maintain
+        // it on our own in this case.
+        MoveToPoint(m_figureStart.X, m_figureStart.Y);
+    }
 }
 
 void wxGDIPlusPathData::AddCurveToPoint( wxDouble cx1, wxDouble cy1, wxDouble cx2, wxDouble cy2, wxDouble x, wxDouble y )
@@ -1201,7 +1258,23 @@ void wxGDIPlusPathData::AddCurveToPoint( wxDouble cx1, wxDouble cy1, wxDouble cx
     PointF c2(cx2,cy2);
     PointF end(x,y);
     PointF start;
-    m_path->GetLastPoint(&start);
+    // If no current point is set then this function should behave
+    // as if preceded by a call to MoveToPoint(cx1, cy1).
+    if ( m_logCurrentPointSet )
+    {
+        start = m_logCurrentPoint;
+        // After calling AddBezier() the native current point
+        // will be updated and can be used.
+        m_logCurrentPointSet = false;
+    }
+    else
+    {
+        if( m_path->GetLastPoint(&start) != Ok )
+        {
+            MoveToPoint(cx1, cy1);
+            start = c1;
+        }
+    }
     m_path->AddBezier(start,c1,c2,end);
 }
 
@@ -1209,50 +1282,144 @@ void wxGDIPlusPathData::AddCurveToPoint( wxDouble cx1, wxDouble cy1, wxDouble cx
 void wxGDIPlusPathData::GetCurrentPoint( wxDouble* x, wxDouble* y) const
 {
     PointF start;
-    m_path->GetLastPoint(&start);
+    if ( m_logCurrentPointSet )
+        start = m_logCurrentPoint;
+    else
+        m_path->GetLastPoint(&start);
+
     *x = start.X ;
     *y = start.Y ;
 }
 
 void wxGDIPlusPathData::AddArc( wxDouble x, wxDouble y, wxDouble r, double startAngle, double endAngle, bool clockwise )
 {
-    double sweepAngle = endAngle - startAngle ;
-    if( fabs(sweepAngle) >= 2*M_PI)
+    double angle;
+
+    // For the sake of compatibility normalize angles the same way
+    // as it is done in Cairo.
+    if ( clockwise )
     {
-        sweepAngle = 2 * M_PI;
+        // If endAngle < startAngle it needs to be progressively
+        // increased by 2*M_PI until endAngle > startAngle.
+        if ( endAngle < startAngle )
+        {
+            while ( endAngle <= startAngle )
+            {
+                endAngle += 2.0*M_PI;
+            }
+        }
+
+        angle = endAngle - startAngle;
     }
     else
     {
-        if ( clockwise )
+        // If endAngle > startAngle it needs to be progressively
+        // decreased by 2*M_PI until endAngle < startAngle.
+        if ( endAngle > startAngle )
         {
-            if( sweepAngle < 0 )
-                sweepAngle += 2 * M_PI;
+            while ( endAngle >= startAngle )
+            {
+                endAngle -= 2.0*M_PI;
+            }
         }
-        else
-        {
-            if( sweepAngle > 0 )
-                sweepAngle -= 2 * M_PI;
 
+        angle = startAngle - endAngle;
+    }
+
+    // To ensure compatibility with Cairo an initial
+    // line segment to the beginning of the arc needs
+    // to be added to the path.
+    AddLineToPoint(r*cos(startAngle) + x, r*sin(startAngle) + y);
+
+    // Native GraphicsPath.AddArc() does nothing
+    // (even current point is not updated)
+    // when sweep angle equals 0 so we can skip
+    // any further actions.
+    if ( angle == 0 )
+    {
+        return;
+    }
+
+    REAL x0 = (REAL)(x-r);
+    REAL y0 = (REAL)(y-r);
+    REAL dim = (REAL)(2*r);
+    if ( angle >= 2.0*M_PI )
+    {
+        // In addition to arc we need to draw full circle(s).
+        // Remarks:
+        // 1. Parity of the number of the circles has to be
+        // preserved because this matters when path would be
+        // filled with wxODDEVEN_RULE flag set (using
+        // FillModeAlternate mode) when number of the edges
+        // is counted.
+        // 2. With GraphicsPath.AddEllipse() we cannot
+        // control the start point of the drawn circle
+        // so we need to construct it from two arcs (halves).
+        int numCircles = (int)(angle / (2.0*M_PI));
+        numCircles = (numCircles - 1) % 2 + 1;
+        for( int i = 0; i < numCircles; i++ )
+        {
+            m_path->AddArc(x0, y0, dim, dim,
+                           wxRadToDeg(startAngle), clockwise ? 180 : -180);
+            m_path->AddArc(x0, y0, dim, dim,
+                           wxRadToDeg(startAngle+M_PI), clockwise ? 180 : -180);
         }
-   }
-   m_path->AddArc((REAL) (x-r),(REAL) (y-r),(REAL) (2*r),(REAL) (2*r),wxRadToDeg(startAngle),wxRadToDeg(sweepAngle));
+        // We need to reduce the angle to [0..2*M_PI) range
+        angle = fmod(angle, 2.0*M_PI);
+    }
+
+    m_path->AddArc(x0, y0, dim, dim, wxRadToDeg(startAngle),
+                   wxRadToDeg(clockwise ? angle : -angle));
+   // After calling AddArc() the native current point will be updated and can be used.
+   m_logCurrentPointSet = false;
 }
 
 void wxGDIPlusPathData::AddRectangle( wxDouble x, wxDouble y, wxDouble w, wxDouble h )
 {
     m_path->AddRectangle(RectF(x,y,w,h));
+    // Drawn rectangle is an intrinsically closed shape but native
+    // current point is not moved to the starting point of the figure
+    // (the same case as with CloseFigure) so we need to maintain it
+    // on our own in this case.
+    MoveToPoint(x, y);
+}
+
+void wxGDIPlusPathData::AddCircle(wxDouble x, wxDouble y, wxDouble r)
+{
+    m_path->AddEllipse((REAL)(x-r), (REAL)(y-r), (REAL)(2.0*r), (REAL)(2.0*r));
+}
+
+void wxGDIPlusPathData::AddEllipse(wxDouble x, wxDouble y, wxDouble w, wxDouble h)
+{
+    m_path->AddEllipse((REAL)x, (REAL)y, (REAL)w, (REAL)h);
 }
 
 void wxGDIPlusPathData::AddPath( const wxGraphicsPathData* path )
 {
-    m_path->AddPath( (GraphicsPath*) path->GetNativePath(), FALSE);
-}
+    const wxGDIPlusPathData* pathData = static_cast<const wxGDIPlusPathData*>(path);
+    const GraphicsPath* grPath = static_cast<const GraphicsPath*>(pathData->GetNativePath());
 
+    m_path->AddPath(grPath, FALSE);
+    // Copy auxiliary data if appended path is non-empty.
+    if( grPath->GetPointCount() > 0 || pathData->m_logCurrentPointSet || pathData->m_figureOpened )
+    {
+        m_logCurrentPointSet = pathData->m_logCurrentPointSet;
+        m_logCurrentPoint = pathData->m_logCurrentPoint;
+        m_figureOpened = pathData->m_figureOpened;
+        m_figureStart = pathData->m_figureStart;
+    }
+}
 
 // transforms each point of this path by the matrix
 void wxGDIPlusPathData::Transform( const wxGraphicsMatrixData* matrix )
 {
-    m_path->Transform( (Matrix*) matrix->GetNativeMatrix() );
+    const Matrix* m = static_cast<const Matrix*>(matrix->GetNativeMatrix());
+    m_path->Transform(m);
+    // Transform also auxiliary points.
+    if ( m_logCurrentPointSet )
+        m->TransformPoints(&m_logCurrentPoint, 1);
+    if ( m_figureOpened )
+        m->TransformPoints(&m_figureStart, 1);
 }
 
 // gets the bounding box enclosing all points (possibly including control points)
@@ -1504,6 +1671,18 @@ void wxGDIPlusContext::DrawRectangle( wxDouble x, wxDouble y, wxDouble w, wxDoub
     wxGDIPlusOffsetHelper helper( m_context , ShouldOffset() );
     Brush *brush = m_brush.IsNull() ? NULL : ((wxGDIPlusBrushData*)m_brush.GetRefData())->GetGDIPlusBrush();
     Pen *pen = m_pen.IsNull() ? NULL : ((wxGDIPlusPenData*)m_pen.GetGraphicsData())->GetGDIPlusPen();
+
+    if ( w < 0 )
+    {
+        x += w;
+        w = -w;
+    }
+
+    if ( h < 0 )
+    {
+        y += h;
+        h = -h;
+    }
 
     if ( brush )
     {
@@ -2107,6 +2286,61 @@ wxGraphicsContext * wxGDIPlusRenderer::CreateContext( const wxEnhMetaFileDC& dc)
 wxGraphicsContext * wxGDIPlusRenderer::CreateContext( const wxMemoryDC& dc)
 {
     ENSURE_LOADED_OR_RETURN(NULL);
+#if wxUSE_WXDIB
+    // It seems that GDI+ sets invalid values for alpha channel when used with
+    // a compatible bitmap (DDB). So we need to convert the currently selected
+    // bitmap to a DIB before using it with any GDI+ functions to ensure that
+    // we get the correct alpha channel values in it at the end.
+
+    wxBitmap bmp = dc.GetSelectedBitmap();
+    wxASSERT_MSG( bmp.IsOk(), "Should select a bitmap before creating wxGCDC" );
+
+    // We don't need to convert it if it can't have alpha at all (any depth but
+    // 32) or is already a DIB with alpha.
+    if ( bmp.GetDepth() == 32 && (!bmp.IsDIB() || !bmp.HasAlpha()) )
+    {
+        // We need to temporarily deselect this bitmap from the memory DC
+        // before modifying it.
+        const_cast<wxMemoryDC&>(dc).SelectObject(wxNullBitmap);
+
+        bmp.ConvertToDIB(); // Does nothing if already a DIB.
+
+        if( !bmp.HasAlpha() )
+        {
+            // Initialize alpha channel, even if we don't have any alpha yet,
+            // we should have correct (opaque) alpha values in it for GDI+
+            // functions to work correctly.
+            {
+                wxAlphaPixelData data(bmp);
+                if ( data )
+                {
+                    wxAlphaPixelData::Iterator p(data);
+                    for ( int y = 0; y < data.GetHeight(); y++ )
+                    {
+                        wxAlphaPixelData::Iterator rowStart = p;
+
+                        for ( int x = 0; x < data.GetWidth(); x++ )
+                        {
+                            p.Alpha() = wxALPHA_OPAQUE;
+                            ++p;
+                        }
+
+                        p = rowStart;
+                        p.OffsetY(data, 1);
+                    }
+                }
+            } // End of block modifying the bitmap.
+
+            // Using wxAlphaPixelData sets the internal "has alpha" flag but we
+            // don't really have any alpha yet, so reset it back for now.
+            bmp.ResetAlpha();
+        }
+
+        // Undo SelectObject() at the beginning of this block.
+        const_cast<wxMemoryDC&>(dc).SelectObjectAsSource(bmp);
+    }
+#endif // wxUSE_WXDIB
+
     wxGDIPlusContext* context = new wxGDIPlusContext(this, dc);
     context->EnableOffset(true);
     return context;
@@ -2329,9 +2563,16 @@ wxGraphicsBitmap wxGDIPlusRenderer::CreateBitmapFromNativeBitmap( void *bitmap )
 wxGraphicsBitmap wxGDIPlusRenderer::CreateSubBitmap( const wxGraphicsBitmap &bitmap, wxDouble x, wxDouble y, wxDouble w, wxDouble h  )
 {
     ENSURE_LOADED_OR_RETURN(wxNullGraphicsBitmap);
+
+    wxCHECK_MSG(!bitmap.IsNull(), wxNullGraphicsBitmap, wxS("Invalid bitmap"));
+
     Bitmap* image = static_cast<wxGDIPlusBitmapData*>(bitmap.GetRefData())->GetGDIPlusBitmap();
     if ( image )
     {
+        wxCHECK_MSG( x >= 0.0 && y >= 0.0 && w > 0.0 && h > 0.0 &&
+                     x + w <= image->GetWidth() && y + h <= image->GetHeight(),
+                     wxNullGraphicsBitmap, wxS("Invalid bitmap region"));
+
         wxGraphicsBitmap p;
         p.SetRefData(new wxGDIPlusBitmapData( this , image->Clone( (REAL) x , (REAL) y , (REAL) w , (REAL) h , PixelFormat32bppPARGB) ));
         return p;

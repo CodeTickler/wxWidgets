@@ -1822,6 +1822,26 @@ wxWindowMSW::DoMoveSibling(WXHWND hwnd, int x, int y, int width, int height)
 
     // otherwise (or if deferring failed) move the window in place immediately
 #endif // wxUSE_DEFERRED_SIZING
+
+    // toplevel window's coordinates are mirrored if the TLW is a child of another
+    // RTL window and changing width without moving the position would enlarge the
+    // window in the wrong direction, so we need to adjust for it
+    if ( IsTopLevel() )
+    {
+        // note that this may be different from GetParent() for wxDialogs
+        HWND tlwParent = ::GetParent((HWND)hwnd);
+        if ( tlwParent && (::GetWindowLong(tlwParent, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) != 0 )
+        {
+            RECT old;
+            ::GetWindowRect((HWND) hwnd, &old);
+            if ( old.left == x && old.right - old.left != width )
+            {
+                x -= width - (old.right - old.left);
+            }
+            // else: not a simple resize
+        }
+    }
+
     if ( !::MoveWindow((HWND)hwnd, x, y, width, height, IsShown()) )
     {
         wxLogLastError(wxT("MoveWindow"));
@@ -1874,17 +1894,24 @@ void wxWindowMSW::DoSetSize(int x, int y, int width, int height, int sizeFlags)
 
     // ... and don't do anything (avoiding flicker) if it's already ok unless
     // we're forced to resize the window
-    if ( x == currentX && y == currentY &&
-         width == currentW && height == currentH &&
-            !(sizeFlags & wxSIZE_FORCE) )
+    if ( !(sizeFlags & wxSIZE_FORCE) )
     {
-        if (sizeFlags & wxSIZE_FORCE_EVENT)
+        if ( width == currentW && height == currentH )
         {
-            wxSizeEvent event( wxSize(width,height), GetId() );
-            event.SetEventObject( this );
-            HandleWindowEvent( event );
+            // We need to send wxSizeEvent ourselves because Windows won't do
+            // it if the size doesn't change.
+            if ( sizeFlags & wxSIZE_FORCE_EVENT )
+            {
+                wxSizeEvent event( wxSize(width,height), GetId() );
+                event.SetEventObject( this );
+                HandleWindowEvent( event );
+            }
+
+            // Still call DoMoveWindow() below if we need to change the
+            // position, otherwise we're done.
+            if ( x == currentX && y == currentY )
+                return;
         }
-        return;
     }
 
     if ( x == wxDefaultCoord && !(sizeFlags & wxSIZE_ALLOW_MINUS_ONE) )
@@ -1967,10 +1994,25 @@ void wxWindowMSW::DoSetClientSize(int width, int height)
         const int widthWin = rectWin.right - rectWin.left,
                   heightWin = rectWin.bottom - rectWin.top;
 
-        // MoveWindow positions the child windows relative to the parent, so
-        // adjust if necessary
-        if ( !IsTopLevel() )
+        if ( IsTopLevel() )
         {
+            // toplevel window's coordinates are mirrored if the TLW is a child of another
+            // RTL window and changing width without moving the position would enlarge the
+            // window in the wrong direction, so we need to adjust for it
+
+            // note that this may be different from GetParent() for wxDialogs
+            HWND tlwParent = ::GetParent(GetHwnd());
+            if ( tlwParent && (::GetWindowLong(tlwParent, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) != 0 )
+            {
+                const int diffWidth = width - (rectClient.right - rectClient.left);
+                rectWin.left -= diffWidth;
+                rectWin.right -= diffWidth;
+            }
+        }
+        else
+        {
+            // MoveWindow positions the child windows relative to the parent, so
+            // adjust if necessary
             wxWindow *parent = GetParent();
             if ( parent )
             {
@@ -2099,8 +2141,6 @@ static void wxYieldForCommandsOnly()
 
 bool wxWindowMSW::DoPopupMenu(wxMenu *menu, int x, int y)
 {
-    menu->UpdateUI();
-
     wxPoint pt;
     if ( x == wxDefaultCoord && y == wxDefaultCoord )
     {
@@ -2318,7 +2358,7 @@ bool wxWindowMSW::MSWProcessMessage(WXMSG* pMsg)
                         // currently active button should get enter press even
                         // if there is a default button elsewhere so check if
                         // this window is a button first
-                        wxWindow *btn = NULL;
+                        wxButton *btn = NULL;
                         if ( lDlgCode & DLGC_DEFPUSHBUTTON )
                         {
                             // let IsDialogMessage() handle this for all
@@ -2327,8 +2367,11 @@ bool wxWindowMSW::MSWProcessMessage(WXMSG* pMsg)
                             long style = ::GetWindowLong(msg->hwnd, GWL_STYLE);
                             if ( (style & BS_OWNERDRAW) == BS_OWNERDRAW )
                             {
-                                // emulate the button click
-                                btn = wxFindWinFromHandle(msg->hwnd);
+                                btn = wxDynamicCast
+                                      (
+                                        wxFindWinFromHandle(msg->hwnd),
+                                        wxButton
+                                      );
                             }
                         }
                         else // not a button itself, do we have default button?
@@ -2369,25 +2412,12 @@ bool wxWindowMSW::MSWProcessMessage(WXMSG* pMsg)
                                                   );
                                 }
                             }
-                            else // bCtrlDown
-                            {
-                                win = wxGetTopLevelParent(win);
-                            }
 
-                            wxTopLevelWindow * const
-                                tlw = wxDynamicCast(win, wxTopLevelWindow);
-                            if ( tlw )
-                            {
-                                btn = wxDynamicCast(tlw->GetDefaultItem(),
-                                                    wxButton);
-                            }
+                            btn = MSWGetDefaultButtonFor(win);
                         }
 
-                        if ( btn && btn->IsEnabled() && btn->IsShownOnScreen() )
-                        {
-                            btn->MSWCommand(BN_CLICKED, 0 /* unused */);
+                        if ( MSWClickButtonIfPossible(btn) )
                             return true;
-                        }
 
                         // This "Return" key press won't be actually used for
                         // navigation so don't generate wxNavigationKeyEvent
@@ -2545,6 +2575,36 @@ bool wxWindowMSW::MSWSafeIsDialogMessage(WXMSG* msg)
 }
 
 #endif // __WXUNIVERSAL__
+
+/* static */
+wxButton* wxWindowMSW::MSWGetDefaultButtonFor(wxWindow* win)
+{
+#if wxUSE_BUTTON
+    win = wxGetTopLevelParent(win);
+
+    wxTopLevelWindow *const tlw = wxDynamicCast(win, wxTopLevelWindow);
+    if ( tlw )
+        return wxDynamicCast(tlw->GetDefaultItem(), wxButton);
+#endif // wxUSE_BUTTON
+
+    return NULL;
+}
+
+/* static */
+bool wxWindowMSW::MSWClickButtonIfPossible(wxButton* btn)
+{
+#if wxUSE_BUTTON
+    if ( btn && btn->IsEnabled() && btn->IsShownOnScreen() )
+    {
+        btn->MSWCommand(BN_CLICKED, 0 /* unused */);
+        return true;
+    }
+#endif // wxUSE_BUTTON
+
+    wxUnusedVar(btn);
+
+    return false;
+}
 
 // ---------------------------------------------------------------------------
 // message params unpackers
@@ -3276,21 +3336,24 @@ wxWindowMSW::MSWHandleMessage(WXLRESULT *result,
 
         case WM_CONTEXTMENU:
             {
-                // Ignore the events that are propagated from a child window by
-                // DefWindowProc(): as wxContextMenuEvent is already propagated
-                // upwards the window hierarchy by us, not doing this would
-                // result in duplicate events being sent.
-                WXHWND hWnd = (WXHWND)wParam;
-                if ( hWnd != m_hWnd )
+                // As with WM_HELP above, we need to avoid duplicate events due
+                // to wxContextMenuEvent being a (propagatable) wxCommandEvent
+                // at wx level but WM_CONTEXTMENU also being propagated upwards
+                // by DefWindowProc(). Unlike WM_HELP, we still need to pass
+                // this one to DefWindowProc() as it sometimes does useful
+                // things with it, e.g. displays the default context menu in
+                // EDIT controls. So we do let the default processing to take
+                // place but set this flag before calling into DefWindowProc()
+                // and don't do anything if we're called from inside it.
+                static bool s_propagatedByDefWndProc = false;
+                if ( s_propagatedByDefWndProc )
                 {
-                    wxWindowMSW *win = FindItemByHWND(hWnd);
-                    if ( win && IsDescendant(win) )
-                    {
-                        // We had already generated wxContextMenuEvent when we
-                        // got WM_CONTEXTMENU for that window.
-                        processed = true;
-                        break;
-                    }
+                    // We could also return false from here, it shouldn't
+                    // matter, the important thing is to not send any events.
+                    // But returning true prevents the message from bubbling up
+                    // even further upwards and so seems to be better.
+                    processed = true;
+                    break;
                 }
 
                 // we don't convert from screen to client coordinates as
@@ -3298,9 +3361,40 @@ wxWindowMSW::MSWHandleMessage(WXLRESULT *result,
                 wxPoint pt(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 
                 wxContextMenuEvent evtCtx(wxEVT_CONTEXT_MENU, GetId(), pt);
-                evtCtx.SetEventObject(this);
 
-                processed = HandleWindowEvent(evtCtx);
+                // we could have got an event from our child, reflect it back
+                // to it if this is the case
+                wxWindowMSW *win = NULL;
+                WXHWND hWnd = (WXHWND)wParam;
+                if ( hWnd != m_hWnd )
+                {
+                    win = FindItemByHWND(hWnd);
+                }
+
+                if ( !win )
+                    win = this;
+
+                evtCtx.SetEventObject(win);
+                processed = win->HandleWindowEvent(evtCtx);
+
+                if ( !processed )
+                {
+                    // Temporarily set the flag before calling out.
+                    s_propagatedByDefWndProc = true;
+                    wxON_BLOCK_EXIT_SET(s_propagatedByDefWndProc, false);
+
+                    // Now do whatever the default handling does, which could
+                    // be nothing at all -- but we can't know this, so we still
+                    // need to call it.
+                    win->MSWDefWindowProc(message, wParam, lParam);
+
+                    // And finally pretend that we processed the message in any
+                    // case because otherwise DefWindowProc() that we're called
+                    // from would pass the message to our parent resulting in
+                    // duplicate events. As it is, we ensure that only one
+                    // wxWindow ever gets this message for any given click.
+                    processed = true;
+                }
             }
             break;
 
@@ -4836,7 +4930,13 @@ wxWindowMSW::MSWGetBgBrushForChild(WXHDC hDC, wxWindowMSW *child)
         RECT rc;
         ::GetWindowRect(GetHwndOf(child), &rc);
 
-        ::MapWindowPoints(NULL, GetHwnd(), (POINT *)&rc, 1);
+        // It is important to pass both points to MapWindowPoints() as in
+        // addition to converting them to our coordinate system, this function
+        // will also exchange the left and right coordinates if this window
+        // uses RTL layout, which is exactly what we need here as the child
+        // window origin is its _right_ top corner in this case and not the
+        // left one.
+        ::MapWindowPoints(NULL, GetHwnd(), (POINT *)&rc, 2);
 
         int x = rc.left,
             y = rc.top;
@@ -4982,9 +5082,10 @@ bool wxWindowMSW::HandleExitSizeMove()
     return HandleWindowEvent(event);
 }
 
+#if wxUSE_DEFERRED_SIZING
+
 bool wxWindowMSW::BeginRepositioningChildren()
 {
-#if wxUSE_DEFERRED_SIZING
     int numChildren = 0;
     for ( HWND child = ::GetWindow(GetHwndOf(this), GW_CHILD);
           child;
@@ -5010,12 +5111,10 @@ bool wxWindowMSW::BeginRepositioningChildren()
 
     // Return true to indicate that EndDeferWindowPos() should be called.
     return true;
-#endif // wxUSE_DEFERRED_SIZING
 }
 
 void wxWindowMSW::EndRepositioningChildren()
 {
-#if wxUSE_DEFERRED_SIZING
     wxASSERT_MSG( m_hDWP, wxS("Shouldn't be called") );
 
     // reset m_hDWP to NULL so that child windows don't try to use our
@@ -5039,8 +5138,9 @@ void wxWindowMSW::EndRepositioningChildren()
         wxWindowMSW * const child = node->GetData();
         child->MSWEndDeferWindowPos();
     }
-#endif // wxUSE_DEFERRED_SIZING
 }
+
+#endif // wxUSE_DEFERRED_SIZING
 
 bool wxWindowMSW::HandleSize(int WXUNUSED(w), int WXUNUSED(h), WXUINT wParam)
 {
@@ -6007,6 +6107,24 @@ const struct wxKeyMapping
     { VK_RWIN,          WXK_WINDOWS_RIGHT },
     { VK_APPS,          WXK_WINDOWS_MENU },
 #endif // VK_APPS defined
+
+    { VK_BROWSER_BACK,        WXK_BROWSER_BACK },
+    { VK_BROWSER_FORWARD,     WXK_BROWSER_FORWARD },
+    { VK_BROWSER_REFRESH,     WXK_BROWSER_REFRESH },
+    { VK_BROWSER_STOP,        WXK_BROWSER_STOP },
+    { VK_BROWSER_SEARCH,      WXK_BROWSER_SEARCH },
+    { VK_BROWSER_FAVORITES,   WXK_BROWSER_FAVORITES },
+    { VK_BROWSER_HOME,        WXK_BROWSER_HOME },
+    { VK_VOLUME_MUTE,         WXK_VOLUME_MUTE },
+    { VK_VOLUME_DOWN,         WXK_VOLUME_DOWN },
+    { VK_VOLUME_UP,           WXK_VOLUME_UP },
+    { VK_MEDIA_NEXT_TRACK,    WXK_MEDIA_NEXT_TRACK },
+    { VK_MEDIA_PREV_TRACK,    WXK_MEDIA_PREV_TRACK },
+    { VK_MEDIA_STOP,          WXK_MEDIA_STOP },
+    { VK_MEDIA_PLAY_PAUSE,    WXK_MEDIA_PLAY_PAUSE },
+    { VK_LAUNCH_MAIL,         WXK_LAUNCH_MAIL },
+    { VK_LAUNCH_APP1,         WXK_LAUNCH_APP1 },
+    { VK_LAUNCH_APP2,         WXK_LAUNCH_APP2 },
 };
 
 } // anonymous namespace

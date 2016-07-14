@@ -105,7 +105,7 @@ methodOverrideMap = {
                        0),
 
     'AppendText' : (0,
-                 'void %s(const wxString& text);',
+                 'void %s(const wxString& text) wxOVERRIDE;',
 
                  '''void %s(const wxString& text) {
                     const wxWX2MBbuf buf = wx2stc(text);
@@ -591,8 +591,19 @@ methodOverrideMap = {
 
      ('Retrieve all the text in the document.', )),
 
-    'GetDirectFunction' : (None, 0, 0, 0),
-    'GetDirectPointer' : (None, 0, 0, 0),
+    'GetDirectFunction' :
+    (0,
+     'void* %s() const;',
+     '''void* %s() const {
+         return (void*)SendMsg(%s);''',
+     0),
+
+    'GetDirectPointer' :
+    (0,
+     'void* %s() const;',
+     '''void* %s() const {
+         return (void*)SendMsg(%s);''',
+     0),
 
     'GetTargetText' :
     (0,
@@ -762,12 +773,26 @@ methodOverrideMap = {
     'SetCursor' : ('SetSTCCursor', 0, 0, 0),
     'GetCursor' : ('GetSTCCursor', 0, 0, 0),
 
-    'LoadLexerLibrary' : (None, 0,0,0),
-
     'SetPositionCache' : ('SetPositionCacheSize', 0, 0, 0),
     'GetPositionCache' : ('GetPositionCacheSize', 0, 0, 0),
 
-    'GetLexerLanguage' : (None, 0, 0, 0),
+    'GetLexerLanguage' :(0,
+     'wxString %s() const;',
+
+     '''wxString %s() const {
+         const int msg = %s;
+         int len = SendMsg(msg, 0, (sptr_t)NULL);
+         if (!len) return wxEmptyString;
+
+         wxMemoryBuffer mbuf(len+1);
+         char* buf = (char*)mbuf.GetWriteBuf(len+1);
+         SendMsg(msg, 0, (sptr_t)buf);
+         mbuf.UngetWriteBuf(len);
+         mbuf.AppendByte(0);
+         return stc2wx(buf);''',
+
+         ('Retrieve the lexing language of the document.',)),
+
     'SetFontQuality' : (None, 0, 0, 0),
     'GetFontQuality' : (None, 0, 0, 0),
     'SetSelection' : (None, 0, 0, 0),
@@ -1001,6 +1026,21 @@ constNonGetterMethods = (
     'CanUndo',
 )
 
+# several methods require wxOVERRIDE
+overrideNeeded = (
+    'Redo',
+    'SelectAll',
+    'Undo',
+    'Cut',
+    'Copy',
+    'Paste',
+    'CanPaste',
+    'CanRedo',
+    'CanUndo',
+    'Clear',
+    'AppendText',
+)
+
 #----------------------------------------------------------------------------
 
 def processIface(iface, h_tmplt, cpp_tmplt, ih_tmplt, h_dest, cpp_dest, docstr_dest, ih_dest, msgcodes):
@@ -1044,7 +1084,6 @@ def processIface(iface, h_tmplt, cpp_tmplt, ih_tmplt, h_dest, cpp_dest, docstr_d
 
         else:
             print('***** Unknown line type: %s' % line)
-
 
     # process templates
     data = {}
@@ -1120,7 +1159,7 @@ def processMethods(methods):
     imps = []
     dstr = []
 
-    for retType, name, number, param1, param2, docs, is_const in methods:
+    for retType, name, number, param1, param2, docs, is_const, is_override in methods:
         retType = retTypeMap.get(retType, retType)
         params = makeParamString(param1, param2)
 
@@ -1143,8 +1182,14 @@ def processMethods(methods):
             theDef = '    %s %s(%s)' % (retType, name, params)
             if is_const:
                 theDef = theDef + ' const'
+            if is_override:
+                theDef = theDef + ' wxOVERRIDE'
             theDef = theDef + ';'
         defs.append(theDef)
+
+        # Skip override from the interface file
+        if is_override:
+          theDef = theDef.replace(' wxOVERRIDE', '')
 
         # Build the method definition for the interface .h file
         if docs:
@@ -1300,7 +1345,7 @@ def parseFun(line, methods, docs, values, is_const, msgcodes):
     else:
         code = number
     methods.append( (retType, name, code, param1, param2, tuple(docs),
-                     is_const or name in constNonGetterMethods) )
+                     is_const or name in constNonGetterMethods, name in overrideNeeded) )
 
 
 #----------------------------------------------------------------------------

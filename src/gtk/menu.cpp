@@ -120,7 +120,12 @@ void wxMenuBar::Init(size_t n, wxMenu *menus[], const wxString titles[], long st
 
     m_menubar = gtk_menu_bar_new();
 
-    if (style & wxMB_DOCKABLE)
+    if ((style & wxMB_DOCKABLE)
+#ifdef __WXGTK3__
+        // using GtkHandleBox prevents menubar from drawing with GTK+ >= 3.19.7
+        && gtk_check_version(3,19,7)
+#endif
+        )
     {
         m_widget = gtk_handle_box_new();
         gtk_container_add(GTK_CONTAINER(m_widget), m_menubar);
@@ -693,14 +698,13 @@ void wxMenuItem::Check( bool check )
 
             wxFALLTHROUGH;
         case wxITEM_CHECK:
+            wxMenuItemBase::Check( check );
             gtk_check_menu_item_set_active( (GtkCheckMenuItem*)m_menuItem, (gint)check );
             break;
 
         default:
             wxFAIL_MSG( wxT("can't check this item") );
     }
-
-    wxMenuItemBase::Check( check );
 }
 
 void wxMenuItem::Enable( bool enable )
@@ -811,7 +815,7 @@ wxMenu::~wxMenu()
     g_object_unref(m_accel);
 }
 
-void wxMenu::SetLayoutDirection(const wxLayoutDirection dir)
+void wxMenu::SetLayoutDirection(wxLayoutDirection dir)
 {
     if ( m_owner )
         wxWindow::GTKSetLayout(m_owner, dir);

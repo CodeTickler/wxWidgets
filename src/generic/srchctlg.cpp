@@ -820,6 +820,24 @@ bool wxSearchCtrl::SetBackgroundColour(const wxColour& colour)
     return true;
 }
 
+
+// Autocomplete
+bool wxSearchCtrl::DoAutoCompleteStrings(const wxArrayString &choices)
+{
+    return m_text->AutoComplete( choices );
+}
+
+bool wxSearchCtrl::DoAutoCompleteFileNames(int flags)
+{
+    return flags == wxFILE ? m_text->AutoCompleteFileNames() : m_text->AutoCompleteDirectories();
+}
+
+bool wxSearchCtrl::DoAutoCompleteCustom(wxTextCompleter *completer)
+{
+    return m_text->AutoComplete(completer);
+}
+
+
 // search control generic only
 void wxSearchCtrl::SetSearchBitmap( const wxBitmap& bitmap )
 {
@@ -935,6 +953,32 @@ static int GetMultiplier()
     return 6;
 }
 
+static void RescaleBitmap(wxBitmap& bmp, const wxSize& sizeNeeded)
+{
+    wxCHECK_RET( sizeNeeded.IsFullySpecified(), wxS("New size must be given") );
+
+#if wxUSE_IMAGE
+    wxImage img = bmp.ConvertToImage();
+    img.Rescale(sizeNeeded.x, sizeNeeded.y);
+    bmp = wxBitmap(img);
+#else // !wxUSE_IMAGE
+    // Fallback method of scaling the bitmap
+    wxBitmap newBmp(sizeNeeded, bmp.GetDepth());
+#if defined(__WXMSW__) || defined(__WXOSX__)
+    // wxBitmap::UseAlpha() is used only on wxMSW and wxOSX.
+    newBmp.UseAlpha(bmp.HasAlpha());
+#endif // __WXMSW__ || __WXOSX__
+    {
+        wxMemoryDC dc(newBmp);
+        double scX = (double)sizeNeeded.GetWidth() / bmp.GetWidth();
+        double scY = (double)sizeNeeded.GetHeight() / bmp.GetHeight();
+        dc.SetUserScale(scX, scY);
+        dc.DrawBitmap(bmp, 0, 0);
+    }
+    bmp = newBmp;
+#endif // wxUSE_IMAGE/!wxUSE_IMAGE
+}
+
 wxBitmap wxSearchCtrl::RenderSearchBitmap( int x, int y, bool renderDrop )
 {
     wxColour bg = GetBackgroundColour();
@@ -1027,9 +1071,7 @@ wxBitmap wxSearchCtrl::RenderSearchBitmap( int x, int y, bool renderDrop )
 
     if ( multiplier != 1 )
     {
-        wxImage image = bitmap.ConvertToImage();
-        image.Rescale(x,y);
-        bitmap = wxBitmap( image );
+        RescaleBitmap(bitmap, wxSize(x, y));
     }
     if ( !renderDrop )
     {
@@ -1117,9 +1159,7 @@ wxBitmap wxSearchCtrl::RenderCancelBitmap( int x, int y )
 
     if ( multiplier != 1 )
     {
-        wxImage image = bitmap.ConvertToImage();
-        image.Rescale(x,y);
-        bitmap = wxBitmap( image );
+        RescaleBitmap(bitmap, wxSize(x, y));
     }
 
     return bitmap;

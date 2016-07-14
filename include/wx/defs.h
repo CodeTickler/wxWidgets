@@ -26,7 +26,6 @@
 #   elif !defined(__WXMOTIF__) && \
          !defined(__WXMSW__)   && \
          !defined(__WXGTK__)   && \
-         !defined(__WXOSX_CARBON__)   && \
          !defined(__WXOSX_COCOA__)   && \
          !defined(__WXOSX_IPHONE__)   && \
          !defined(__X__)       && \
@@ -341,7 +340,9 @@ typedef short int WXTYPE;
 #define wxConstCast(obj, className) wx_const_cast(className *, obj)
 
 #ifndef HAVE_STD_WSTRING
-    #if defined(__VISUALC__)
+    #if __cplusplus >= 201103L
+        #define HAVE_STD_WSTRING
+    #elif defined(__VISUALC__)
         #define HAVE_STD_WSTRING
     #elif defined(__MINGW32__)
         #define HAVE_STD_WSTRING
@@ -349,7 +350,9 @@ typedef short int WXTYPE;
 #endif
 
 #ifndef HAVE_STD_STRING_COMPARE
-    #if defined(__VISUALC__)
+    #if __cplusplus >= 201103L
+        #define HAVE_STD_STRING_COMPARE
+    #elif defined(__VISUALC__)
         #define HAVE_STD_STRING_COMPARE
     #elif defined(__MINGW32__) || defined(__CYGWIN32__)
         #define HAVE_STD_STRING_COMPARE
@@ -364,7 +367,8 @@ typedef short int WXTYPE;
 
 /*
     Check for C++11 compilers, it is important to do it before the
-    __has_include() checks because of g++ 4.9.2+ complications below.
+    __has_include() checks because at least g++ 4.9.2+ __has_include() returns
+    true for C++11 headers which can't be compiled in non-C++11 mode.
  */
 #if __cplusplus >= 201103L || wxCHECK_VISUALC_VERSION(10)
     #ifndef HAVE_TYPE_TRAITS
@@ -378,46 +382,20 @@ typedef short int WXTYPE;
     #endif
 #elif defined(__has_include)
     /*
-        Notice that we trust our configure tests more than __has_include(),
-        notably the latter can return true even if the header exists but isn't
-        actually usable, as it happens with <type_traits> in non C++11 mode.
-        So if configure already detected at least one working alternative,
-        just use it.
+        We're in non-C++11 mode here, so only test for pre-C++11 headers. As
+        mentioned above, using __has_include() to test for C++11 would wrongly
+        detect them even though they can't be used in this case, don't do it.
      */
-
-    /*
-        Since 4.9.2, g++ provides __has_include() but, unlike clang, refuses to
-        compile the C++11 headers in C++98 mode (and we are sure we use the
-        latter because we explicitly checked for C++11 above).
-     */
-    #if defined(__GNUC__) && !defined(__clang__)
-        #define wx_has_cpp11_include(h) 0
-    #else
-        #define wx_has_cpp11_include(h) __has_include(h)
+    #if !defined(HAVE_TR1_TYPE_TRAITS) && __has_include(<tr1/type_traits>)
+        #define HAVE_TR1_TYPE_TRAITS
     #endif
 
-    #if !defined(HAVE_TYPE_TRAITS) && !defined(HAVE_TR1_TYPE_TRAITS)
-        #if wx_has_cpp11_include(<type_traits>)
-            #define HAVE_TYPE_TRAITS
-        #elif __has_include(<tr1/type_traits>)
-            #define HAVE_TR1_TYPE_TRAITS
-        #endif
+    #if !defined(HAVE_TR1_UNORDERED_MAP) && __has_include(<tr1/unordered_map>)
+        #define HAVE_TR1_UNORDERED_MAP
     #endif
 
-    #if !defined(HAVE_STD_UNORDERED_MAP) && !defined(HAVE_TR1_UNORDERED_MAP)
-        #if wx_has_cpp11_include(<unordered_map>)
-            #define HAVE_STD_UNORDERED_MAP
-        #elif __has_include(<tr1/unordered_map>)
-            #define HAVE_TR1_UNORDERED_MAP
-        #endif
-    #endif
-
-    #if !defined(HAVE_STD_UNORDERED_SET) && !defined(HAVE_TR1_UNORDERED_SET)
-        #if wx_has_cpp11_include(<unordered_set>)
-            #define HAVE_STD_UNORDERED_SET
-        #elif __has_include(<tr1/unordered_set>)
-            #define HAVE_TR1_UNORDERED_SET
-        #endif
+    #if !defined(HAVE_TR1_UNORDERED_SET) && __has_include(<tr1/unordered_set>)
+        #define HAVE_TR1_UNORDERED_SET
     #endif
 #endif /* defined(__has_include) */
 
@@ -908,10 +886,8 @@ typedef short int WXTYPE;
 /*  where should i put this? we need to make sure of this as it breaks */
 /*  the <iostream> code. */
 #if !wxUSE_IOSTREAMH && defined(__WXDEBUG__)
-#    ifdef wxUSE_DEBUG_NEW_ALWAYS
 #    undef wxUSE_DEBUG_NEW_ALWAYS
 #    define wxUSE_DEBUG_NEW_ALWAYS 0
-#    endif
 #endif
 
 /*  ---------------------------------------------------------------------------- */
@@ -1869,10 +1845,9 @@ enum wxBorder
  * should be passed to wxWindow::SetExtraStyle(), not SetWindowStyle())
  */
 
-/*  by default, TransferDataTo/FromWindow() only work on direct children of the */
-/*  window (compatible behaviour), set this flag to make them recursively */
-/*  descend into all subwindows */
-#define wxWS_EX_VALIDATE_RECURSIVELY    0x00000001
+/* This flag is obsolete as recursive validation is now the default (and only
+ * possible) behaviour. Simply don't use it any more in the new code. */
+#define wxWS_EX_VALIDATE_RECURSIVELY    0x00000000 /* used to be 1 */
 
 /*  wxCommandEvents and the objects of the derived classes are forwarded to the */
 /*  parent window and so on recursively by default. Using this flag for the */
@@ -2318,14 +2293,17 @@ enum wxStandardID
 };
 
 /*  ---------------------------------------------------------------------------- */
-/*  wxWindowID type (after wxID_XYZ enum, platform detection, and dlimpexp.h)    */
+/*  wxWindowID type                                                              */
 /*  ---------------------------------------------------------------------------- */
 
-/*  special care should be taken with this type under Windows where the real */
-/*  window id is unsigned, so we must always do the cast before comparing them */
-/*  (or else they would be always different!). Using wxGetWindowId() which does */
-/*  the cast itself is recommended. Note that this type can't be unsigned */
-/*  because wxID_ANY == -1 is a valid (and largely used) value for window id. */
+/*
+ * wxWindowID used to be just a typedef defined here, now it's a class, but we
+ * still continue to define it here for compatibility, so that the code using
+ * it continues to compile even if it includes just wx/defs.h.
+ *
+ * Notice that wx/windowid.h can only be included after wxID_XYZ definitions
+ * (as it uses them).
+ */
 #if defined(__cplusplus) && wxUSE_GUI
     #include "wx/windowid.h"
 #endif
@@ -2676,7 +2654,7 @@ enum wxKeyCode
     WXK_COMMAND = WXK_CONTROL,
 
     /* Hardware-specific buttons */
-    WXK_SPECIAL1 = 193,
+    WXK_SPECIAL1 = WXK_WINDOWS_MENU + 2, /* Skip WXK_RAW_CONTROL if necessary */
     WXK_SPECIAL2,
     WXK_SPECIAL3,
     WXK_SPECIAL4,
@@ -2695,7 +2673,25 @@ enum wxKeyCode
     WXK_SPECIAL17,
     WXK_SPECIAL18,
     WXK_SPECIAL19,
-    WXK_SPECIAL20
+    WXK_SPECIAL20,
+
+    WXK_BROWSER_BACK,
+    WXK_BROWSER_FORWARD,
+    WXK_BROWSER_REFRESH,
+    WXK_BROWSER_STOP,
+    WXK_BROWSER_SEARCH,
+    WXK_BROWSER_FAVORITES,
+    WXK_BROWSER_HOME,
+    WXK_VOLUME_MUTE,
+    WXK_VOLUME_DOWN,
+    WXK_VOLUME_UP,
+    WXK_MEDIA_NEXT_TRACK,
+    WXK_MEDIA_PREV_TRACK,
+    WXK_MEDIA_STOP,
+    WXK_MEDIA_PLAY_PAUSE,
+    WXK_LAUNCH_MAIL,
+    WXK_LAUNCH_APP1,
+    WXK_LAUNCH_APP2
 };
 
 /* This enum contains bit mask constants used in wxKeyEvent */
@@ -2721,7 +2717,7 @@ enum wxKeyModifier
 #define wxDLG_UNIT(parent, pt) parent->ConvertDialogToPixels(pt)
 
 /* Paper types */
-typedef enum
+enum wxPaperSize
 {
     wxPAPER_NONE,               /*  Use specific dimensions */
     wxPAPER_LETTER,             /*  Letter, 8 1/2 by 11 inches */
@@ -2844,7 +2840,7 @@ typedef enum
     wxPAPER_PENV_10_ROTATED,    /* PRC Envelope #10 Rotated 458 x 324 m */
     wxPAPER_A0,                 /* A0 Sheet 841 x 1189 mm */
     wxPAPER_A1                  /* A1 Sheet 594 x 841 mm */
-} wxPaperSize;
+};
 
 /* Printing orientation */
 enum wxPrintOrientation
@@ -2973,12 +2969,6 @@ typedef unsigned long   WXDWORD;
 typedef unsigned short  WXWORD;
 
 typedef WX_OPAQUE_TYPE(PicHandle ) * WXHMETAFILE ;
-#if wxOSX_USE_CARBON
-typedef struct OpaqueControlRef* WXWidget ;
-typedef struct OpaqueWindowPtr* WXWindow ;
-typedef struct __AGLPixelFormatRec   *WXGLPixelFormat;
-typedef struct __AGLContextRec       *WXGLContext;
-#endif
 
 typedef void*       WXDisplay;
 
@@ -3023,9 +3013,6 @@ DECLARE_WXMAC_OPAQUE_REF( MenuRef )
 
 typedef IconRef WXHICON ;
 typedef HIShapeRef WXHRGN;
-#if wxOSX_USE_CARBON
-typedef MenuRef WXHMENU;
-#endif
 
 #endif
 

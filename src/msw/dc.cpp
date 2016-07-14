@@ -240,13 +240,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(wxGDIDLLsCleanupModule, wxModule);
 
 #endif // USE_DYNAMIC_GDI_FUNCS
 
-// Namespace for the wrapper functions, hopefully one day we'll be able to get
-// rid of all of them and then it will be easy to find all occurrences of their
-// use by just searching for this namespace name.
-//
-// All of the functions in this namespace must work *exactly* like the standard
-// functions with the same name and just return an error if dynamically loading
-// them failed.
 namespace wxDynLoadWrappers
 {
 
@@ -317,19 +310,16 @@ BOOL GradientFill(HDC hdc, PTRIVERTEX pVert, ULONG numVert,
 
 #elif defined(USE_STATIC_GDI_FUNCS)
 
-inline
 DWORD GetLayout(HDC hdc)
 {
     return ::GetLayout(hdc);
 }
 
-inline
 DWORD SetLayout(HDC hdc, DWORD dwLayout)
 {
     return ::SetLayout(hdc, dwLayout);
 }
 
-inline
 BOOL AlphaBlend(HDC hdcDest, int xDest, int yDest, int wDest, int hDest,
                 HDC hdcSrc, int xSrc, int ySrc, int wSrc, int hSrc,
                 BLENDFUNCTION bf)
@@ -339,7 +329,6 @@ BOOL AlphaBlend(HDC hdcDest, int xDest, int yDest, int wDest, int hDest,
                         bf);
 }
 
-inline
 BOOL GradientFill(HDC hdc, PTRIVERTEX pVert, ULONG numVert,
                   PVOID pMesh, ULONG numMesh, ULONG mode)
 {
@@ -602,9 +591,6 @@ wxMSWDCImpl::DoGetClippingBox(wxCoord *x, wxCoord *y, wxCoord *w, wxCoord *h) co
     {
         wxMSWDCImpl *self = wxConstCast(this, wxMSWDCImpl);
         self->UpdateClipBox();
-
-        if ( !m_clipX1 && !m_clipX2 )
-            self->m_clipping = false;
     }
 
     wxDCImpl::DoGetClippingBox(x, y, w, h);
@@ -636,6 +622,19 @@ void wxMSWDCImpl::DoSetClippingRegion(wxCoord x, wxCoord y, wxCoord w, wxCoord h
     // manually
     //
     // FIXME: possible +/-1 error here, to check!
+    // (x,y) has to represent the left-top corner of the region
+    // so if size values are negative we need to recalculate
+    // parameters of the region to get (x,y) at this corner.
+    if ( w < 0 )
+    {
+        w = -w;
+        x -= (w - 1);
+    }
+    if ( h < 0 )
+    {
+        h = -h;
+        y -= (h - 1);
+    }
     HRGN hrgn = ::CreateRectRgn(LogicalToDeviceX(x),
                                 LogicalToDeviceY(y),
                                 LogicalToDeviceX(x + w),
@@ -710,30 +709,19 @@ int wxMSWDCImpl::GetDepth() const
 
 void wxMSWDCImpl::Clear()
 {
-    RECT rect;
-    if (m_window)
-    {
-        GetClientRect((HWND) m_window->GetHWND(), &rect);
-    }
-    else
+    if ( !m_window )
     {
         // No, I think we should simply ignore this if printing on e.g.
         // a printer DC.
         // wxCHECK_RET( m_selectedBitmap.IsOk(), wxT("this DC can't be cleared") );
         if (!m_selectedBitmap.IsOk())
             return;
-
-        rect.left = rect.top = 0;
-        rect.right = m_selectedBitmap.GetWidth();
-        rect.bottom = m_selectedBitmap.GetHeight();
     }
-
-    ::OffsetRect(&rect, -m_deviceOriginX, -m_deviceOriginY);
-
-    (void) ::SetMapMode(GetHdc(), MM_TEXT);
 
     DWORD colour = ::GetBkColor(GetHdc());
     HBRUSH brush = ::CreateSolidBrush(colour);
+    RECT rect;
+    ::GetClipBox(GetHdc(), &rect);
     ::FillRect(GetHdc(), &rect, brush);
     ::DeleteObject(brush);
 

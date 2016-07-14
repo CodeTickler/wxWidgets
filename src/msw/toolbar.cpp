@@ -148,14 +148,16 @@ public:
     {
         if ( IsControl() && !m_label.empty() )
         {
-            // create a control to render the control's label
+            // Create a control to render the control's label.
+            // It has the same witdh as the control.
+            wxSize size(control->GetSize().GetWidth(), wxDefaultCoord);
             m_staticText = new wxStaticText
                                (
                                  m_tbar,
                                  wxID_ANY,
                                  m_label,
                                  wxDefaultPosition,
-                                 wxDefaultSize,
+                                 size,
                                  wxALIGN_CENTRE | wxST_NO_AUTORESIZE
                                );
         }
@@ -172,20 +174,53 @@ public:
         delete m_staticText;
     }
 
-    virtual void SetLabel(const wxString& label)
+    virtual void SetLabel(const wxString& label) wxOVERRIDE
     {
+        wxASSERT_MSG( IsControl() || IsButton(),
+           wxS("Label can be set for control or button tool only") );
+
         if ( label == m_label )
             return;
 
         wxToolBarToolBase::SetLabel(label);
 
-        if ( m_staticText )
-            m_staticText->SetLabel(label);
-
-        // we need to update the label shown in the toolbar because it has a
-        // pointer to the internal buffer of the old label
-        //
-        // TODO: use TB_SETBUTTONINFO
+        if ( IsControl() )
+        {
+            if ( m_staticText )
+            {
+                 if ( !label.empty() )
+                 {
+                    m_staticText->SetLabel(label);
+                 }
+                 else
+                 {
+                    delete m_staticText;
+                    m_staticText = NULL;
+                 }
+            }
+            else
+            {
+                 if ( !label.empty() )
+                 {
+                    // Create a control to render the control's label.
+                    // It has the same witdh as the control.
+                    wxSize size(m_control->GetSize().GetWidth(), wxDefaultCoord);
+                    m_staticText = new wxStaticText(m_tbar, wxID_ANY, label,
+                                        wxDefaultPosition, size,
+                                        wxALIGN_CENTRE | wxST_NO_AUTORESIZE);
+                 }
+            }
+        }
+        else if ( IsButton() )
+        {
+            // Because new label can have different length than the old one
+            // so updating button's label with TB_SETBUTTONINFO would require
+            // also manual re-positionining items in the control tools located
+            // to the right in the toolbar and recalculation of stretchable
+            // spacers so it is easier just to recreate the toolbar with
+            // Realize(). Performance penalty should be negligible.
+            m_tbar->Realize();
+        }
     }
 
     wxStaticText* GetStaticText()
@@ -279,7 +314,7 @@ static RECT wxGetTBItemRect(HWND hwnd, int index, int id = wxID_NONE)
     return r;
 }
 
-inline bool MSWShouldBeChecked(const wxToolBarToolBase *tool)
+static bool MSWShouldBeChecked(const wxToolBarToolBase *tool)
 {
     // Apparently, "checked" state image overrides the "disabled" image
     // so we need to enforce our custom "disabled" image (if there is any)
@@ -539,8 +574,6 @@ wxSize wxToolBar::DoGetBestSize() const
         sizeBest.y ++;
     }
 
-    CacheBestSize(sizeBest);
-
     return sizeBest;
 }
 
@@ -627,7 +660,23 @@ bool wxToolBar::DoDeleteTool(size_t pos, wxToolBarToolBase *tool)
 
     static_cast<wxToolBarTool*>(tool)->ToBeDeleted();
 
-    // and finally rearrange the tools
+    // and finally rearrange the tools:
+
+    // by shifting left all controls on the right hand side
+    wxToolBarToolsList::compatibility_iterator node;
+    for ( node = m_tools.Find(tool); node; node = node->GetNext() )
+    {
+        wxToolBarTool * const ctool = static_cast<wxToolBarTool*>(node->GetData());
+
+        if ( ctool->IsToBeDeleted() )
+            continue;
+
+        if ( ctool->IsControl() )
+        {
+            ctool->MoveBy(-delta);
+        }
+    }
+
     // by recalculating stretchable spacers, if there are any
     UpdateStretchableSpacersSize();
 
@@ -1046,7 +1095,7 @@ bool wxToolBar::Realize()
                 // automatically according to the size of their bitmap and text
                 // label, if present. They look hideously ugly without autosizing
                 // when the labels have even slightly different lengths.
-                if ( !IsVertical() )
+                if ( HasFlag(wxTB_HORZ_LAYOUT) )
                 {
                     button.fsStyle |= TBSTYLE_AUTOSIZE;
                 }
@@ -1581,12 +1630,24 @@ void wxToolBar::SetWindowStyleFlag(long style)
 
 void wxToolBar::DoEnableTool(wxToolBarToolBase *tool, bool enable)
 {
-    ::SendMessage(GetHwnd(), TB_ENABLEBUTTON,
-                  (WPARAM)tool->GetId(), (LPARAM)MAKELONG(enable, 0));
+    if ( tool->IsButton() )
+    {
+        ::SendMessage(GetHwnd(), TB_ENABLEBUTTON,
+                      (WPARAM)tool->GetId(), (LPARAM)MAKELONG(enable, 0));
 
-    // Adjust displayed checked state -- it could have changed if the tool is
-    // disabled and has a custom "disabled state" bitmap.
-    DoToggleTool(tool, tool->IsToggled());
+        // Adjust displayed checked state -- it could have changed if the tool is
+        // disabled and has a custom "disabled state" bitmap.
+        DoToggleTool(tool, tool->IsToggled());
+    }
+    else if ( tool->IsControl() )
+    {
+        wxToolBarTool* tbTool = static_cast<wxToolBarTool*>(tool);
+
+        tbTool->GetControl()->Enable(enable);
+        wxStaticText* text = tbTool->GetStaticText();
+        if ( text )
+            text->Enable(enable);
+    }
 }
 
 void wxToolBar::DoToggleTool(wxToolBarToolBase *tool,
@@ -2014,11 +2075,7 @@ WXLRESULT wxToolBar::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam
 
 #ifdef wxHAS_MSW_BACKGROUND_ERASE_HOOK
         case WM_PAINT:
-            // refreshing the controls in the toolbar inside a composite window
-            // results in an endless stream of WM_PAINT messages -- and seems
-            // to be unnecessary anyhow as everything works just fine without
-            // any special workarounds in this case
-            if ( !IsDoubleBuffered() && HandlePaint(wParam, lParam) )
+            if ( HandlePaint(wParam, lParam) )
                 return 0;
             break;
 #endif // wxHAS_MSW_BACKGROUND_ERASE_HOOK

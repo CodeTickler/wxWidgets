@@ -110,9 +110,9 @@ struct wxFontMetrics
     abstract API for drawing on any of them.
 
     wxWidgets offers an alternative drawing API based on the modern drawing
-    backends GDI+, CoreGraphics and Cairo. See wxGraphicsContext, wxGraphicsRenderer
-    and related classes. There is also a wxGCDC linking the APIs by offering
-    the wxDC API on top of a wxGraphicsContext.
+    backends GDI+, CoreGraphics, Cairo and Direct2D. See wxGraphicsContext,
+    wxGraphicsRenderer and related classes. There is also a wxGCDC linking
+    the APIs by offering the wxDC API on top of a wxGraphicsContext.
 
     wxDC is an abstract base class and cannot be created directly.
     Use wxPaintDC, wxClientDC, wxWindowDC, wxScreenDC, wxMemoryDC or
@@ -155,14 +155,14 @@ struct wxFontMetrics
     In general wxDC methods don't support alpha transparency and the alpha
     component of wxColour is simply ignored and you need to use wxGraphicsContext
     for full transparency support. There are, however, a few exceptions: first,
-    under Mac OS X colours with alpha channel are supported in all the normal
+    under OS X colours with alpha channel are supported in all the normal
     wxDC-derived classes as they use wxGraphicsContext internally. Second,
     under all platforms wxSVGFileDC also fully supports alpha channel. In both
     of these cases the instances of wxPen or wxBrush that are built from
     wxColour use the colour's alpha values when stroking or filling.
 
 
-    @section Support for Transformation Matrix
+    @section dc_transform_support Support for Transformation Matrix
 
     On some platforms (currently only under MSW) wxDC has support for applying 
     an arbitrary affine transformation matrix to its coordinate system. Call
@@ -523,8 +523,14 @@ public:
                          wxPolygonFillMode fill_style = wxODDEVEN_RULE);
 
     /**
-        Draws a rectangle with the given top left corner, and with the given
-        size.  The current pen is used for the outline and the current brush
+        Draws a rectangle with the given corner coordinate and size.
+
+        Normally, @a x and @a y specify the top left corner coordinates and
+        both @a width and @a height are positive, however they are also allowed
+        to be negative, in which case the corresponding corner coordinate
+        refers to the right or bottom corner instead.
+
+        The current pen is used for the outline and the current brush
         for filling the shape.
     */
     void DrawRectangle(wxCoord x, wxCoord y, wxCoord width, wxCoord height);
@@ -749,6 +755,8 @@ public:
 
     /**
         Gets the rectangle surrounding the current clipping region.
+        If no clipping region is set this function returns the extent
+        of the device context.
     */
     void GetClippingBox(wxCoord *x, wxCoord *y, wxCoord *width, wxCoord *height) const;
 
@@ -761,13 +769,15 @@ public:
         uses for the clipping region are for clipping text or for speeding up
         window redraws when only a known area of the screen is damaged.
 
-        Notice that you need to call DestroyClippingRegion() if you want to set
+        @remarks
+        - Calling this function can only make the clipping region smaller,
+        never larger.
+
+        - You need to call DestroyClippingRegion() first if you want to set
         the clipping region exactly to the region specified.
 
-        Also note that if the clipping region is empty, any previously set
-        clipping region is destroyed, i.e. it is equivalent to calling
-        DestroyClippingRegion(), and not to clipping out all drawing on the DC
-        as might be expected.
+        - If resulting clipping region is empty, then all drawing on the DC is
+        clipped out (all changes made by drawing operations are masked out).
 
         @see DestroyClippingRegion(), wxRegion
     */

@@ -162,6 +162,24 @@ bool wxControlContainerBase::SetFocusToChild()
     return wxSetFocusToChild(m_winParent, &m_winLastFocused);
 }
 
+#ifdef __WXMSW__
+
+bool wxControlContainerBase::HasTransparentBackground() const
+{
+    for ( wxWindow *win = m_winParent->GetParent(); win; win = win->GetParent() )
+    {
+        if ( win->MSWHasInheritableBackground() )
+            return true;
+
+        if ( win->IsTopLevel() )
+            break;
+    }
+
+    return false;
+}
+
+#endif // __WXMSW__
+
 #ifndef wxHAS_NATIVE_TAB_TRAVERSAL
 
 // ----------------------------------------------------------------------------
@@ -505,7 +523,7 @@ void wxControlContainer::HandleOnNavigationKey( wxNavigationKeyEvent& event )
                     // even an MDI child frame, so test for this explicitly
                     // (and in particular don't just use IsTopLevel() which
                     // would return false in the latter case).
-                    if ( focusedParent->IsTopNavigationDomain() )
+                    if ( focusedParent->IsTopNavigationDomain(wxWindow::Navigation_Tab) )
                         break;
 
                     event.SetCurrentFocus( focusedParent );
